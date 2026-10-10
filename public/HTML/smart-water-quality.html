@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HydroOS - Water Quality Monitor (Simulation)</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-blue: #2980b9;
+            --water-color: #3498db;
+            --bg-light: #f4f7f6;
+            --card-white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: var(--primary-blue);
+            color: white;
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin-top: 20px;
+            padding-bottom: 50px;
+        }
+
+        .tank-section {
+            background: var(--card-white);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .tank-frame {
+            width: 160px;
+            height: 220px;
+            border: 6px solid #333;
+            border-radius: 10px 10px 15px 15px;
+            position: relative;
+            margin: 0 auto;
+            overflow: hidden;
+            background: #e0e0e0;
+        }
+
+        .water-fill {
+            width: 100%;
+            background: linear-gradient(to top, #1a5276, var(--water-color));
+            position: absolute;
+            bottom: 0;
+            transition: height 2s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .water-fill::before {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            top: -10px;
+            border-radius: 40%;
+            animation: moveWave 3s infinite linear;
+        }
+
+        @keyframes moveWave {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(0%) rotate(360deg); }
+        }
+
+        .percentage-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            z-index: 5;
+        }
+
+        .sensor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: var(--card-white);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 4px solid var(--primary-blue);
+        }
+
+        .card i { font-size: 1.8rem; color: var(--primary-blue); margin-bottom: 10px; }
+        .card .value { font-size: 1.4rem; font-weight: bold; color: #2c3e50; }
+        
+        .status-good { color: #27ae60 !important; }
+        .status-danger { color: #c0392b !important; }
+
+        .simulation-badge {
+            background: #f39c12;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <header style="display: flex;gap:15rem; margin-left: 3rem;" >
+        <h1>HydroOS Smart Monitor</h1>
+        <h1>Molla</h1>
+    </header>
+
+    <div class="container">
+        <div style="text-align: center;">
+            <span class="simulation-badge"><i class="fas fa-robot"></i> Simulation Mode Active</span>
+        </div>
+
+        <div class="tank-section">
+            <div class="tank-frame">
+                <div class="water-fill" id="waterLevel" style="height: 0%;"></div>
+                <div class="percentage-display"><span id="levelText">0</span>%</div>
+            </div>
+            <h3>የታንከር የውሃ መጠን</h3>
+        </div>
+
+        <div class="sensor-grid">
+            <div class="card">
+                <i class="fas fa-thermometer-half"></i>
+                <h4>ሙቀት (Temp)</h4>
+                <div class="value" id="tempVal">--</div>
+                <span class="unit">°C</span>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-vial"></i>
+                <h4>pH Level</h4>
+                <div class="value" id="phVal">--</div>
+                <span id="phStatus">Neutral</span>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-atom"></i>
+                <h4>ንጽህና (TDS)</h4>
+                <div class="value" id="tdsVal">--</div>
+                <span class="unit">PPM</span>
+            </div>
+
+            <div class="card">
+                <i class="fas fa-tint-slash"></i>
+                <h4>መደፍረስ (Turb)</h4>
+                <div class="value" id="turbVal">--</div>
+                <span class="unit">%</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Simulation Logic ---
+        let waterDirection = 1; // 1 ለ መጨመር፣ -1 ለ መቀነስ
+        let currentLevel = 50;
+
+        function updateSimulation() {
+            // 1. የውሃ መጠን አኒሜሽን (ሲጨምርና ሲቀንስ)
+            currentLevel += (Math.random() * 5) * waterDirection;
+            if (currentLevel >= 95) waterDirection = -1; // 95% ሲደርስ እንዲቀንስ
+            if (currentLevel <= 10) waterDirection = 1;  // 10% ሲደርስ እንዲጨምር
+
+            // 2. ሌሎች ዳታዎችን በዘፈቀደ መቀየር (Random Data)
+            const simulatedData = {
+                level: currentLevel.toFixed(1),
+                temp: (Math.random() * (28 - 20) + 20).toFixed(1),
+                ph: (Math.random() * (9 - 6) + 6).toFixed(1),
+                tds: Math.floor(Math.random() * (500 - 50) + 50),
+                turbidity: Math.floor(Math.random() * 30)
+            };
+
+            // UI ማዘመን (Updating UI)
+            
+            // Level
+            document.getElementById('waterLevel').style.height = simulatedData.level + "%";
+            document.getElementById('levelText').innerText = simulatedData.level;
+
+            // Temp
+            document.getElementById('tempVal').innerText = simulatedData.temp;
+
+            // pH
+            const ph = parseFloat(simulatedData.ph);
+            const phElem = document.getElementById('phVal');
+            phElem.innerText = ph;
+            if(ph < 6.5 || ph > 8.5) {
+                phElem.className = "value status-danger";
+                document.getElementById('phStatus').innerText = "Unsafe";
+            } else {
+                phElem.className = "value status-good";
+                document.getElementById('phStatus').innerText = "Safe";
+            }
+
+            // TDS
+            document.getElementById('tdsVal').innerText = simulatedData.tds;
+
+            // Turbidity
+            document.getElementById('turbVal').innerText = simulatedData.turbidity;
+        }
+
+        // በየ 3 ሴኮንዱ ዳታውን ቀይር
+        setInterval(updateSimulation, 3000);
+
+        // ገጹ ሲከፈት ወዲያው እንዲጀምር
+        window.onload = updateSimulation;
+    </script>
+</body>
+</html>

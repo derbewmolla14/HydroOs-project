@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="am">
+
+<head>
+    <meta charset="UTF-8">
+    <title>About Developer</title>
+    <link rel="stylesheet" href="./CSS/style.css">
+     <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
+    <style>
+        /* --- Header & Navigation Setup --- */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #2f8f88;
+    color: white;
+    display: flex;
+    justify-content: space-between; /* Logo በግራ፣ ሊንኮች በቀኝ */
+    align-items: center;
+    padding: 10px 40px; /* በጎን በኩል ትንሽ ክፍተት እንዲኖር */
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 20px; /* በእያንዳንዱ ሊንክ መካከል። ክፍተት እንዲኖር */
+}
+
+.nav-links li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.nav-links li a:hover {
+    color: #f39c12;
+}
+
+/* --- Buttons in Header --- */
+.admin-nav-btn {
+    background-color: #f39c12; 
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.admin-nav-btn:hover {
+    background-color: #e67e22;
+    transform: translateY(-2px); /* ሲነካ ትንሽ ከፍ እንዲል */
+}
+
+.logout-btn {
+    background-color: #db4437; /* ለLogout ቀይ ቀለም ቢሆን ይመረጣል */
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #c1352a;
+}
+
+/* --- Logo Styling --- */
+.logo {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    font-family: 'Roboto Condensed', sans-serif;
+}
+
+/* --- Body Adjustment --- */
+body {
+    background-image: url(../images/images/image/images/good\ wallpaper.jpg);
+    background-size: cover;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding-top: 80px; /* Header ገጹን እንዳይሸፍነው */
+}
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+    <nav class="gap-2">
+        <div class="logo">HydroOS</div>
+        <ul class="nav-links">
+            <li><a href="/about-app.html">Home</a></li>
+            <li><button onclick="goToAdmin()" class="admin-nav-btn">Admin</button></li>
+            <li><button onclick="logout()" class="logout-btn">Logout</button></li>
+        </ul>
+    </nav>
+</header>
+    <div class="container" style="text-align: center;">
+        <div class="lang-switch">
+            <button onclick="changeLang('am')">አማርኛ</button>
+            <button onclick="changeLang('en')">English</button>
+        </div>
+
+        <h1 id="dev-title">ስለ አልሚው (Developer)</h1>
+        <h2 id="dev-name">ሞላ ደርበው (Molla Derbew)</h2>
+
+        <div class="about-card">
+            <div class="profile-img">
+                <img src="../images/mollaspacial3.png" alt="Molla"
+                    style="width:150px; border-radius:50%; border: 3px solid #f1c40f;">
+            </div>
+
+            <p id="dev-desc" class="description">
+                እኔ ሞላ ደርበው እባላለሁ። በወሎ ዩኒቨርሲቲ (Kombolcha Institute of Technology) የ3ኛ ዓመት የሶፍትዌር ኢንጂነሪንግ እና የውሃ ምህንድስና
+                ተማሪ ነኝ። ይህ ጥምር እውቀት በሃገራችን ያለውን የውሃ አያያዝ ሥርዓት ለማዘመን ትልቅ አቅም ሰጥቶኛል።
+            </p>
+
+            <h3 id="vision-title">ራዕይና ዓላማ</h3>
+            <p id="dev-goal">
+                ዋናው ዓላማዬ የኢንጂነሪንግ እውቀትን ከሶፍትዌር ልማት ጋር በማጣመር (Smart Engineering) ማህበረሰባዊ ችግሮችን መፍታት ነው። ይህ ፕሮጀክት የውሃ
+                ብክነትን ለመቀነስ የተፈጠረ ነው።
+            </p>
+
+            <h3 id="skills-title">የቴክኖሎጂ ክህሎቶች</h3>
+            <div id="dev-skills-list">
+                <p><strong>Hardware:</strong> ESP32, Ultrasonic Sensors (HC-SR04)</p>
+                <p><strong>Backend:</strong> Node.js, Express, Socket.io</p>
+                <p><strong>Database:</strong> MongoDB</p>
+            </div>
+
+            <h3 id="social-title">ማህበራዊ ተሳትፎ</h3>
+            <p id="dev-social">
+                "Molla Ethio Tech" የተባለ የዩቲዩብ ቻናል እና የቴሌግራም ማህበረሰብ በመምራት የቴክኖሎጂ እውቀት በማካፈል ላይ እገኛለሁ።
+            </p>
+
+            <div class="skills-grid">
+                <div class="skill-item">💧 Water Engineering</div>
+                <div class="skill-item">💻 Software Engineering</div>
+                <div class="skill-item">🤖 IoT Developer</div>
+            </div>
+        </div>
+        <div class="vision-wrapper">
+            <div class="vision-box">
+                <div class="vision-icon">🌟</div>
+                <div class="vision-content">
+                    <h3 id="vision-label">ራዕይ (Vision)</h3>
+                    <p id="vision-quote">"ቴክኖሎጂን በመጠቀም የውሃ ሀብታችንን በብልህነት ማስተዳደር!"</p>
+                </div>
+            </div>
+        </div>
+
+        <br>
+        <a href="index.html" id="back-btn" class="btn">ወደ ዳሽቦርድ ተመለስ</a>
+    </div>
+         if (localStorage.getItem("isLoggedIn") === "true") {
+                document.body.style.display = "block";
+            }
+
+            else {
+                window.location.href = "login.html";
+            }
+
+    <script src="../socket.io/socket.io.js"></script>
+    <script src="../JS/about-developer.js"></script>
+</body>
+
+</html>

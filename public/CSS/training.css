@@ -1,0 +1,71 @@
+:root {
+    --primary-blue: #007bff;
+    --accent-green: #2ecc71;
+    --dark-bg: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #f1f1f1;
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+}
+
+.main-header {
+    background: #1a1a1a;
+    padding: 15px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--primary-blue);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+
+@keyframes grow {
+    from { transform: scale(0.9) rotate(-2deg); }
+    to { transform: scale(1.1) rotate(2deg); }
+}
+
+/* Video Grid */
+.training-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 25px;
+    padding: 20px;
+}
+
+.video-box {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.video-box:hover {
+    transform: translateY(-10px);
+    border-color: var(--accent-green);
+}
+
+.lang-btn {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+.academy-btn{
+    color: wheat;
+    text-decoration: none;
+}

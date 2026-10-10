@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password</title>
+    <link rel="stylesheet" href="./CSS/forgetpassword.css">
+     <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
+    <style>
+        /* የፌስቡክን ስሜት ለመስጠት OTP እና አዲስ ፓስወርድ መጀመሪያ ተደብቀው ይቆያሉ */
+        #otp-section, #password-section { display: none; margin-top: 15px; }
+        .instruction { font-size: 14px; color: #606770; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="form">
+    <h2>Find Your Account</h2>
+    <p class="instruction">Please enter your email and phone to search for your account.</p>
+
+    <input type="email" id="email2" placeholder="Email Address">
+    <input type="text" id="phone" placeholder="Phone Number">
+    
+    <button onclick="sendFacebookStyleCode();" id="sendBtn">Send Code</button>
+
+    <div id="otp-section">
+        <p class="instruction">Enter the 4-digit code sent to your phone.</p>
+        <input type="text" id="otp2" placeholder="Enter OTP">
+        <button onclick="verifyOTP();">Verify Code</button>
+    </div>
+
+    <div id="password-section">
+        <p class="instruction">Create a new, strong password.</p>
+        <input type="password" id="newPassword" placeholder="New Password">
+        <button onclick="finishReset();">Change Password</button>
+    </div>
+
+    <p style="margin-top: 20px;"><a href="login.html">Cancel</a></p>
+</div>
+<script src="../socket.io/socket.io.js"></script>
+<script src="../JS/general.js"></script>
+</body>
+</html>

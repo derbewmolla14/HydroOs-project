@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="./CSS/about.css">
+     <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
+    <style>
+        .login-box { max-width: 400px; margin: 100px auto; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); text-align: center; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body style="background: #f4f7f6;">
+    <div class="login-box">
+        <h2>Admin Login</h2>
+        <p>እባክዎ የአድሚን የይለፍ ቃል ያስገቡ</p>
+        <input type="password" id="adminPass" placeholder="Password...">
+        <button onclick="checkAdmin()">ግባ</button>
+    </div>
+<script src="../socket.io/socket.io.js"></script>
+   <script>
+    async function checkAdmin() {
+        const passwordInput = document.getElementById('adminPass');
+        const passwordValue = passwordInput.value;
+
+        if (!passwordValue) {
+            alert("እባክዎ መጀመሪያ የይለፍ ቃል ያስገቡ!");
+            return;
+        }
+
+        try {
+            // የ fetch አድራሻውን ሙሉ በሙሉ ለማግኘት እንዲህ ተጠቀም
+            const response = await fetch(`${window.location.origin}/admin/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: passwordValue })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // መግባቱን ማረጋገጫ ሴቭ እናደርጋለን
+                localStorage.setItem("isAdminLoggedIn", "true"); 
+            // username ስላልተበየነ ቀለል ባለ መልዕክት እንተካው
+                alert("እንኳን ደህና መጡ አድሚን!");
+                window.location.href = '/admin-dashboard';
+            } else {
+                alert(data.message || "የይለፍ ቃል ስህተት ነው!");
+            }
+        } catch (err) {
+            console.error("የመጣው ስህተት፦", err);
+            // እዚህ ጋር ነው ስህተቱ የሚመጣው - ሰርቨሩ መብራቱን አረጋግጥ
+            alert("ከሰርቨር ጋር መገናኘት አልተቻለም! እባክዎ ኢንተርኔትዎን ወይም የሰርቨሩን ሁኔታ ያረጋግጡ።");
+        }
+    }
+
+    function adminLogout() {
+        localStorage.removeItem("isAdminLoggedIn");
+        window.location.href = "/admin-login";
+    }
+</script>
+</body>
+</html>

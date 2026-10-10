@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Water Monitor</title>
+    <link rel="stylesheet" href="./CSS/style.css">
+     <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
+</head>
+<body>
+    <div class="field">
+        <div class="header">
+            <!-- <button id="lang-toggle" onclick="toggleLanguage()" class="lang-btn">አማርኛ / English</button> -->
+            <a href="about-app.html" class="about-btn aheader1" data-en="HOME" data-am="ቤት">HOME</a>
+            <a href="about-developer.html" class="dev-btn aheader2" data-en="About developer" data-am="ስለ አበልጻጊው">About developer</a>
+        </div>
+        
+        <div class="container">
+            <header>
+                <h1 data-en="Smart Water Monitor 💧" data-am="ብልህ የውሃ ተቆጣጣሪ 💧">Smart Water Monitor 💧</h1>
+                <p id="date-time"></p>
+                <div style="margin-top: 20px;">
+                    <a href="../download-excel" class="download-btn" data-en="Download Excel Report 📥" data-am="የExcel ሪፖርት አውርድ 📥">
+                        Download Excel Report (የExcel ሪፖርት አውርድ) 📥
+                    </a>
+                </div>
+            </header>
+
+            <div class="main-display">
+                <div class="tank-wrapper">
+                    <div class="water-tank">
+                        <div class="water-level" id="water-level" style="height: 65%;"></div>
+                    </div>
+                    <div class="percentage-text"><span id="percent-val">65</span>%</div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="card">
+                        <h3 data-en="Status" data-am="ሁኔታ">Status (ሁኔታ)</h3>
+                        <p class="status-online" data-en="Online" data-am="ኦንላይን">Online</p>
+                    </div>
+                    <div class="card">
+                        <h3 data-en="Volume" data-am="መጠን">Volume (መጠን)</h3>
+                        <p><span id="volume-val">650</span> <span data-en="Liters" data-am="ሊትር">Liters</span></p>
+                    </div>
+                    <div class="card">
+                        <h3 data-en="Temperature" data-am="ሙቀት">Temperature (ሙቀት)</h3>
+                        <p><span>24</span>°C</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="../socket.io/socket.io.js"></script>
+    <script src="./JS/script.js"></script>
+
+    <script>
+        // Security Check
+        (function() {
+            if (localStorage.getItem("isLoggedIn") !== "true") {
+                window.location.href = "/HTML/login.html";
+            }
+        })();
+
+        // Socket Connection
+        socket = io("https://smart-water-monitor-7kui.onrender.com");
+
+        socket.on('levelUpdate', (newLevel) => {
+            if (typeof updateWaterLevel === 'function') {
+                updateWaterLevel(newLevel);
+            }
+        });
+    </script>
+</body>
+</html>

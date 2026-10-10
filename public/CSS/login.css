@@ -1,0 +1,482 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+    --lead: #212121;
+    --golden-finger: #F2BD12;
+    --eye-ball: #FFFDF7;
+    --hint-yellow: #FCF1CC;
+    --pure-white: #FFFFFF;
+    --primary-color: #2f8f88;
+    --dark-bg: #1a1a1a;
+    --light-bg: #ffffff;
+    --accent-gold: #f39c12;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', Arial, Helvetica, sans-serif;
+}
+
+body {
+    background-image: linear-gradient(rgba(218, 196, 196, 0.904), rgba(0,0,0,0.5));
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Dark Mode ቀለሞች */
+body.dark-theme {
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .form-section .form{
+    background: #5f4848;
+    color: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+body.dark-theme .form {
+    background-color: #ffffff !important; /* የፎርሙ ዳራ ነጭ */
+    color: #333333 !important;           /* የጽሁፉ ቀለም ጥቁር (እንዲነበብ) */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}body.dark-theme .form h2, 
+body.dark-theme .form h3, 
+body.dark-theme .form p {
+    color: #222 !important;
+}
+
+/* ኢንፑት ቦክሶች (Inputs) በግልጽ እንዲታዩ */
+body.dark-theme .form input {
+    background-color: #f9f9f9;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
+body.dark-theme input {
+    background: #685e5e;
+    color: white;
+    border: 1px solid #444;
+}
+
+body.dark-theme .info-section {
+    color: #ccc;
+}
+
+/* --- HEADER STYLE --- */
+.main-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 10px 5%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-text { font-size: 1.5rem; font-weight: 900; }
+.partner-text { font-size: 0.7rem; opacity: 0.9; }
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+
+.nav-links a, .info-btn {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: 0.3s;
+}
+
+.nav-links a:hover { color: var(--accent-gold); }
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.lang-switch button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.lang-switch button.active {
+    background: white;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.mode-btn {
+    background: none;
+    border: 1px solid white;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    color: white;
+    cursor: pointer;
+}
+
+.admin-btn {
+    background: var(--accent-gold);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-right: 20px;
+}
+//* መስመሮቹ ሲቀየሩ የሚኖራቸው ቅርጽ */
+.menu-icon-container.change .bar:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.menu-icon-container.change .bar:nth-child(2) {
+    opacity: 0; /* መካከለኛው መስመር ይጠፋል */
+}
+
+.menu-icon-container.change .bar:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* ለስላሳ እንቅስቃሴ እንዲኖረው (Transition) */
+.bar {
+    width: 30px;
+    height: 4px;
+    background-color: var(--golden-finger);
+    margin: 5px 0;
+    transition: 0.4s; /* ለውጡ ፍጥነት እንዲኖረው */
+}
+
+/* Mouse ሲያርፍበት ትንሽ እንዲያበራ */
+.menu-icon-container:hover .bar {
+    background-color: white;
+}
+
+/* Overlayው ሲከፈት መስመሮቹ ወደ "X" እንዲቀየሩ ከፈለግህ (በ JS አማካኝነት 'change' class በመጨመር) */
+.change .bar:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+.change .bar:nth-child(2) {
+    opacity: 0;
+}
+.change .bar:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+/* --- MAIN LAYOUT (ግራና ቀኝ) --- */
+.main-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    gap: 60px;
+    padding: 120px 8% 40px 8%;
+    flex-wrap: wrap;
+}
+
+/* የግራ መረጃ (Info Section) */
+.info-section {
+    flex: 1;
+    max-width: 550px;
+    color: white;
+}
+
+.info-section h1 {
+    font-size: 3rem;
+    color: var(--golden-finger);
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.info-section p {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.features-list {
+    list-style: none;
+    margin-top: 20px;
+}
+
+.features-list li {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+}
+
+.features-list li::before {
+    content: "💧";
+    margin-right: 10px;
+}
+
+/* የቀኝ ፎርም (Form Section) */
+.form-section {
+    flex: 0 0 400px;
+}
+
+.form {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    width: 100%;
+}
+
+.form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--lead);
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    outline: none;
+}
+
+.form button {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.form button:hover { background: #267872; }
+
+.social { margin-top: 15px; display: flex; gap: 10px; }
+.google { background: #db4437; flex: 1; color: white; }
+.facebook { background: #4267B2; flex: 1; color: white; }
+
+.forget-passward {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+.headerimg1 {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 15px;
+}
+
+/* --- MODAL STYLE --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 30px;
+    width: 40%;
+    border-radius: 12px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    cursor: pointer;
+}
+/* --- FOOTER STYLE --- */
+.main-footer {
+    background: rgba(71, 41, 41, 0.929);
+    color: white;
+    padding: 40px 5% 10px 5%;
+    margin-top: 50px;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 250px;
+}
+
+.footer-section h3, .footer-section h4 {
+    margin-bottom: 15px;
+    color: var(--golden-finger);
+}
+
+.footer-section p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.footer-section ul {
+    list-style: none;
+}
+
+.footer-section ul li {
+    margin-bottom: 10px;
+}
+
+.footer-section ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+.footer-section ul li a:hover {
+    color: var(--golden-finger);
+    padding-left: 5px;
+}
+
+.footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+
+
+.top-announcer {
+    background:10px 5px linear-gradient(90deg, #7a8922, #0056b3);
+    color: white;
+    text-align: center;
+    padding: 10px 1rem;
+    font-size: 14px;
+    overflow: hidden;
+    border-radius: 2rem;
+}
+
+#auto-swipper {
+    margin: 0;
+    font-size: 1.2rem;
+    animation: fadeInOut 3s infinite; /* የሚጠፋና የሚበራ ኢፌክት */
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(10px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Dark Mode ሲበራ ፎርሙ ነጭ እንዲሆን የጠየቅከው */
+body.dark-theme .form {
+    background-color: white !important;
+    color: rgb(229, 245, 57) !important;
+}
+
+/* Responsiveness */
+
+@media (max-width:768px) {
+
+    .main-container { flex-direction: column; text-align: center; }
+    .features-list li { justify-content: center; }
+      /* ለሞባይል እንዲመች */
+      .logo-text{
+        font-size: 15px;
+      }
+      .nav-links, .admin-btn{
+        display: none;
+      }
+      .lang-switch{
+        font-size: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+      .navMenu{ 
+        right: 0;
+        left: 70%;
+    }
+      .top-announcer{
+        width: 9rem;
+         font-size: 1rem;
+        right: 0;
+        left: 90%;
+        padding: auto;
+      }
+    .mode-btn {
+    background: none;
+    border: 1px solid white;
+    border-radius: 100%;
+    width: 1.5rem;
+    height: 35px;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+}
+.form-section{
+    display: none;
+}
+.menu-icon {
+        display: flex;
+        right: 0;
+        left: 70%;
+
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .main-footer,.footer-content{
+        font-size: .9rem;
+        display: flex;
+        justify-content: space-between;
+    }
+    .footer-content p{
+        font-size: .9rem;
+    }
+    }

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - HydroOS Site</title>
+    <link rel="stylesheet" href="../CSS/login.css">
+</head>
+
+<body>
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo-area">
+                <span class="logo-text">HydroOS</span>
+                <span class="partner-text">| Powered by CAWST</span>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="#" data-key="home">Home</a></li>
+                <li><a href="about-me.html" data-key="about">About</a></li>
+                <li><button onclick="showCawstInfo()" class="info-btn" data-key="cawst">CAWST</button></li>
+            </ul>
+
+            <div class="header-controls">
+                <div class="lang-switch">
+                    <button onclick="changeLanguage('am')" id="btn-am">አማርኛ</button>
+                    <button onclick="changeLanguage('en')" id="btn-en" class="active">English</button>
+                </div>
+
+                <button id="dark-mode-toggle" class="mode-btn">
+                    <span id="mode-icon">🌙</span>
+                </button>
+
+                <button onclick="goToAdmin()" class="admin-btn" data-key="admin">Admin</button>
+            </div>
+        </nav>
+    </header>
+
+    <div id="cawstModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCawstInfo()">&times;</span>
+            <h2>About CAWST</h2>
+            <p>CAWST (Centre for Affordable Water and Sanitation Technology) is a Canadian charity that provides
+                training and consulting to help people access safe water and sanitation. HydroOS uses CAWST standards
+                for water treatment monitoring.</p>
+        </div>
+    </div>
+
+    <main class="main-container">
+        <div class="info-section">
+            <h1 data-key="welcome">Welcome to HydroOS</h1>
+            <p>
+                <strong data-key="logoText">HydroOS</strong> 
+                <span data-key="description">is an innovative Smart Water Monitoring platform designed to bridge the gap between Water Engineering and Software Technology.</span>
+            </p>
+            <p data-key="missionText">
+                Developed to ensure clean water access and efficient resource management,
+                our system provides real-time data tracking for university communities.
+            </p>
+
+            <ul class="features-list">
+                <li data-key="feature1">Real-time Water Quality Monitoring</li>
+                <li data-key="feature2">Automated Alert Systems</li>
+                <li data-key="feature3">Secure Payment Tracking</li>
+                <li data-key="feature4">Smart Resource Dashboard</li>
+            </ul>
+
+            <p class="quote-text" data-key="quote">
+                "Engineering a sustainable future through smart digital solutions."
+            </p>
+        </div>
+
+        <div class="form-section">
+            <div class="form">
+                <div class="between">
+                    <img src="/images/mollaspacial2.png" class="headerimg1" alt="Logo">
+                </div>
+                <h2 data-key="loginTitle">Login</h2>
+
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+
+                <button onclick="login()" data-key="loginBtn">Login</button><br><br>
+
+                <p><a href="forget.html" class="forget-passward" data-key="forgot">Forgot Password?</a></p>
+
+                <hr>
+                <h3 data-key="loginWith">Login with</h3>
+                <button class="social google">Google</button>
+                <button class="social facebook">Facebook</button>
+
+                <p>
+                    <span data-key="noAccount">No account?</span> 
+                    <a href="register.html" data-key="register">Register</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section about">
+                <h3>HydroOS</h3>
+                <p data-key="footerAbout">A modern platform dedicated to smart water management and quality monitoring.</p>
+            </div>
+
+            <div class="footer-section links">
+                <h4 data-key="quickLinks">Quick Links</h4>
+                <ul>
+                    <li><a href="about-me.html" data-key="aboutDev">About Developer</a></li>
+                    <li><a href="#" onclick="showCawstInfo()" data-key="cawstPartner">CAWST Partnership</a></li>
+                    <li><a href="privacy.html" data-key="privacy">Privacy Policy</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section contact">
+                <h4 data-key="contact">Contact</h4>
+                <p>📧 support@hydroos.com</p>
+                <p>📍 Wollo University, KiOT</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 HydroOS | <span data-key="devBy">Developed by Molla</span></p>
+        </div>
+    </footer>
+
+    <script src="../JS/general.js"></script>
+    <script src="../JS/login-header.js"></script>
+</body>
+
+</html>
