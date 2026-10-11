@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groundwater Monitor - HydroOS</title>
+    <link rel="icon" type="image/png" href="../../images/HydroOS.png">
+    <link rel="stylesheet" href="../CSS/loginnew.css">
+    <link rel="stylesheet" href="../CSS/dashboard.css">
+    <link rel="stylesheet" href="../CSS/groundwater.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo-area">
+                <span class="logo-text">HydroOS</span>
+                <span class="partner-text">| Groundwater Module</span>
+            </div>
+            <div class="header-controls">
+                <a href="about-app.html" class="action-btn back-btn">← Back to Dashboard</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Groundwater Container -->
+    <main class="gw-container">
+        <div class="gw-banner">
+            <h1>Groundwater Level &amp; Aquifer Analytics</h1>
+            <p>Real-time sensor telemetry, water table depth tracking, and historical stability analysis.</p>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="gw-grid">
+            <div class="gw-card">
+                <h3>Current Water Table Depth</h3>
+                <span class="gw-value" id="waterDepth">-- m</span>
+                <span class="gw-status normal" id="depthStatus">Stable Level</span>
+            </div>
+
+            <div class="gw-card">
+                <h3>Aquifer Pressure</h3>
+                <span class="gw-value" id="aquiferPressure">-- kPa</span>
+                <span class="gw-status normal">Optimal Range</span>
+            </div>
+
+            <div class="gw-card">
+                <h3>Pumping Rate Status</h3>
+                <span class="gw-value" id="pumpRate">-- L/s</span>
+                <span class="gw-status active">Active Flow</span>
+            </div>
+        </div>
+
+        <!-- Control & Live Feed Section -->
+        <div class="gw-control-section">
+            <div class="gw-panel">
+                <h2>Sensor Feed Controls</h2>
+                <p>Manage IoT ESP32 sensor intervals and calibration parameters for well site #04.</p>
+                <div class="btn-group">
+                    <button class="action-btn" onclick="triggerManualSync()">Sync Sensor Data</button>
+                    <button class="action-btn edu-btn" onclick="togglePumpSimulation()">Toggle Pump Motor</button>
+                </div>
+            </div>
+
+            <div class="gw-panel log-panel">
+                <h2>Real-Time Telemetry Log</h2>
+                <div id="telemetryLog" class="log-box">
+                    <p>[System] Initializing sensor connection...</p>
+                    <p>[IoT] Connected to Groundwater Node ESP32-GW04.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="../JS/groundwater.js"></script>
+    <script src="../JS/script.js"></script>
+   <script src="../JS/general.js" defer></script>
+    <script src="../JS/ligin-header.js" defer></script>
+</body>
+
+</html>

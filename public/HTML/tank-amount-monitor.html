@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Water Monitor</title>
-    <link rel="stylesheet" href="./CSS/style.css">
-     <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
+   <link rel="stylesheet" href="../CSS/waterlevel.css">
+<link rel="icon" type="image/png" href="../../images/HydroOS.png">
 </head>
 <body>
     <div class="field">
@@ -53,21 +53,48 @@
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="../socket.io/socket.io.js"></script>
-    <script src="./JS/script.js"></script>
 
     <script>
+        function updateWaterLevel(level) {
+    const percentage = Math.max(0, Math.min(100, Number(level) || 0));
+
+    document.getElementById("water-level").style.height =
+        `${percentage}%`;
+
+    document.getElementById("percent-val").textContent =
+        percentage;
+
+    document.getElementById("volume-val").textContent =
+        Math.round(percentage * 10);
+}
         // Security Check
-        (function() {
-            if (localStorage.getItem("isLoggedIn") !== "true") {
-                window.location.href = "/HTML/login.html";
+        (async function() {
+            const apiUrl = window.location.hostname === "127.0.0.1"
+                ? "http://127.0.0.1:3000"
+                : window.location.hostname === "localhost"
+                    ? "http://localhost:3000"
+                    : "https://smart-water-monitor-7kui.onrender.com";
+            try {
+                const response = await fetch(`${apiUrl}/api/session`, {
+                    credentials: "include"
+                });
+                if (!response.ok) {
+                    window.location.replace("login.html");
+                }
+            } catch (error) {
+                console.error("Session check failed:", error);
+                window.location.replace("login.html");
             }
         })();
 
         // Socket Connection
-        socket = io("https://smart-water-monitor-7kui.onrender.com");
+        const socket = typeof io === "function"
+            ? io(["localhost", "127.0.0.1"].includes(window.location.hostname)
+                ? "http://localhost:3000"
+                : "https://smart-water-monitor-7kui.onrender.com")
+            : null;
 
-        socket.on('levelUpdate', (newLevel) => {
+        if (socket) socket.on('levelUpdate', (newLevel) => {
             if (typeof updateWaterLevel === 'function') {
                 updateWaterLevel(newLevel);
             }

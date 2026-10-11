@@ -1,0 +1,470 @@
+/* ================================
+   Smart Water Monitor - HydroOS
+   ================================ */
+
+/* 1. Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #0879d9;
+    --primary-dark: #0759a6;
+    --water: #00b4ff;
+    --water-light: #80e5ff;
+    --background: #eef5fb;
+    --surface: #ffffff;
+    --text: #17324d;
+    --muted: #6b8197;
+    --success: #16a36a;
+    --border: #dce8f2;
+    --shadow: 0 8px 30px rgba(20, 72, 120, 0.10);
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg, #eaf5ff, #f7fbff);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+/* 2. Main Background */
+.field {
+    min-height: 100vh;
+    padding: 20px;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(0, 180, 255, 0.10),
+            transparent 35%
+        ),
+        linear-gradient(135deg, #edf7ff, #f8fbff);
+}
+
+/* 3. Navigation Header */
+.header {
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 14px;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+}
+
+.header a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: 0.25s ease;
+}
+
+.about-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.about-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.dev-btn {
+    background: #eaf4ff;
+    color: var(--primary-dark);
+    border: 1px solid #c9e3fa;
+}
+
+.dev-btn:hover {
+    background: #d9edff;
+    transform: translateY(-2px);
+}
+
+/* 4. Main Dashboard Container */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 35px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+}
+
+/* 5. Dashboard Title */
+.container header {
+    text-align: center;
+    padding-bottom: 30px;
+    border-bottom: 1px solid var(--border);
+}
+
+.container header h1 {
+    color: var(--primary-dark);
+    font-size: clamp(25px, 4vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+}
+
+#date-time {
+    color: var(--muted);
+    font-size: 15px;
+    margin-top: 5px;
+}
+
+/* 6. Download Excel Button */
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 23px;
+    background: linear-gradient(135deg, #0785e8, #0759b8);
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(8, 121, 217, 0.22);
+    transition: transform 0.25s ease,
+                box-shadow 0.25s ease,
+                background 0.25s ease;
+}
+
+.download-btn:hover {
+    background: linear-gradient(135deg, #056bc0, #06488f);
+    transform: translateY(-3px);
+    box-shadow: 0 9px 22px rgba(8, 121, 217, 0.30);
+}
+
+.download-btn:active {
+    transform: translateY(0);
+}
+
+/* 7. Main Dashboard Layout */
+.main-display {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.5fr);
+    align-items: center;
+    gap: 45px;
+    padding: 40px 10px 15px;
+}
+
+/* 8. Water Tank Section */
+.tank-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 25px 10px;
+}
+
+/* Tank Shape */
+.water-tank {
+    position: relative;
+    width: 155px;
+    height: 300px;
+    overflow: hidden;
+    border: 6px solid #7aabc9;
+    border-top: 9px solid #5089b0;
+    border-radius: 15px 15px 25px 25px;
+    background: linear-gradient(180deg, #f4fbff, #dceefa);
+    box-shadow:
+        inset 0 0 15px rgba(27, 102, 155, 0.12),
+        0 12px 25px rgba(35, 95, 140, 0.12);
+}
+
+/* Tank Water Level */
+.water-level {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 65%;
+    background: linear-gradient(
+        180deg,
+        #57d8ff 0%,
+        #13b5f4 35%,
+        #0780dc 100%
+    );
+    border-radius: 0 0 15px 15px;
+    transition: height 0.8s ease-in-out;
+}
+
+/* Decorative Water Surface */
+.water-level::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: -10%;
+    width: 120%;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(175, 242, 255, 0.85);
+    animation: waterWave 3s ease-in-out infinite alternate;
+}
+
+.water-level::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.20),
+        transparent 30%,
+        rgba(255, 255, 255, 0.10)
+    );
+    pointer-events: none;
+}
+
+@keyframes waterWave {
+    from {
+        transform: translateX(-4px);
+    }
+
+    to {
+        transform: translateX(4px);
+    }
+}
+
+/* Percentage Display */
+.percentage-text {
+    color: var(--primary-dark);
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+/* 9. Statistics Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+.card {
+    position: relative;
+    padding: 23px 25px;
+    background: linear-gradient(135deg, #ffffff, #f5faff);
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--primary);
+    border-radius: 14px;
+    box-shadow: 0 5px 18px rgba(30, 80, 125, 0.06);
+    transition: transform 0.25s ease,
+                box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(30, 80, 125, 0.12);
+}
+
+.card h3 {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.card p {
+    color: var(--text);
+    font-size: 25px;
+    font-weight: 800;
+}
+
+/* Online Status */
+.card .status-online {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--success);
+    font-size: 23px;
+}
+
+.status-online::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: var(--success);
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(22, 163, 106, 0.12);
+    animation: onlinePulse 1.8s infinite;
+}
+
+@keyframes onlinePulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(22, 163, 106, 0.12);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(22, 163, 106, 0.04);
+    }
+}
+
+/* 10. Responsive Tablet Layout */
+@media (max-width: 768px) {
+    .field {
+        padding: 14px;
+    }
+
+    .header {
+        margin-bottom: 20px;
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .header a {
+        padding: 10px 13px;
+        font-size: 12px;
+    }
+
+    .container {
+        padding: 25px 20px;
+        border-radius: 18px;
+    }
+
+    .main-display {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding-top: 25px;
+    }
+
+    .tank-wrapper {
+        padding: 15px 10px;
+    }
+
+    .water-tank {
+        width: 135px;
+        height: 250px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .card {
+        padding: 17px 12px;
+    }
+
+    .card h3 {
+        font-size: 11px;
+        letter-spacing: 0;
+    }
+
+    .card p,
+    .card .status-online {
+        font-size: 19px;
+    }
+}
+
+/* 11. Responsive Mobile Layout */
+@media (max-width: 480px) {
+    .field {
+        padding: 9px;
+    }
+
+    .header {
+        justify-content: center;
+        flex-wrap: wrap;
+        border-radius: 12px;
+    }
+
+    .header a {
+        flex: 1;
+        min-width: 120px;
+        padding: 10px 8px;
+        font-size: 12px;
+    }
+
+    .container {
+        padding: 22px 13px;
+        border-radius: 15px;
+    }
+
+    .container header h1 {
+        font-size: 25px;
+    }
+
+    #date-time {
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .download-btn {
+        width: 100%;
+        padding: 12px 8px;
+        font-size: 12px;
+    }
+
+    .main-display {
+        padding: 20px 0 5px;
+        gap: 10px;
+    }
+
+    .water-tank {
+        width: 120px;
+        height: 220px;
+    }
+
+    .percentage-text {
+        font-size: 29px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .card {
+        padding: 17px 18px;
+    }
+
+    .card h3 {
+        font-size: 12px;
+    }
+
+    .card p,
+    .card .status-online {
+        font-size: 21px;
+    }
+}
+
+/* 12. Accessibility */
+a:focus-visible {
+    outline: 3px solid #ffb020;
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

@@ -1,32 +1,140 @@
 // ==========================================
 // 1. Configuration & Socket Setup
 // ==========================================
-const API_URL = "https://smart-water-monitor-7kui.onrender.com";
-const socket = typeof io !== 'undefined' ? io(API_URL) : null;
-
+const API_URL = window.HYDROOS_API_URL || (window.location.hostname === "127.0.0.1"
+    ? "http://127.0.0.1:3000"
+    : window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+    : "https://smart-water-monitor-7kui.onrender.com");
+const socket = typeof io === "function" ? io(API_URL) : null;
 let otpCode = 0; 
 let facebookOTP = 0;
+let currentUser = null;
 
+if (socket) {
+    socket.on("userDeleted", (data) => {
+        const currentUserId = localStorage.getItem("userId");
+        if (!currentUserId || String(data.userId) !== String(currentUserId)) return;
+
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("loggedUserName");
+        alert("Your account has been deleted by the administrator");
+        window.location.replace("login.html");
+    });
+}
+
+// ```javascript
 // ==========================================
-// 2. Security Check (Page Protection)
+// 2. Page Protection and Navigation
 // ==========================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    setSessionLoading(true);
     const currentPage = window.location.pathname;
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-    // ተጠቃሚው ገብቶ ከሆነ ወደ Login/Register ገጾች እንዳይመለስ
-    if ((currentPage.includes("login.html") || currentPage === "/") && isLoggedIn === "true") {
-        window.location.href = "about-app.html";
+    const loginPage = "login.html";
+    const dashboardPage = "about-app.html";
+
+    const isLoginPage = currentPage.endsWith("/login.html");
+    const isRegisterPage = currentPage.endsWith("/register.html");
+
+    const privatePages = [
+        "about-app.html",
+        "index.html",
+        "soil-moisture.html",
+        "water-quality.html",
+        "ground-water-level.html",
+        "about-developer.html",
+        "tank-amount-monitor.html"
+    ];
+
+    const isPrivatePage = privatePages.some(page =>
+        currentPage.endsWith("/" + page)
+    );
+
+    const sessionResult = await getCurrentSession();
+    const isLoggedIn = sessionResult.status === "authenticated";
+
+    if (isLoginPage || isRegisterPage) {
+        if (isLoggedIn) {
+            window.location.replace(dashboardPage);
+        }
+        if (sessionResult.status === "error") {
+            showSessionError(sessionResult.error);
+        }
+        setSessionLoading(false);
         return;
     }
 
-    // ተጠቃሚው ካልገባ ወደ ዋና ዋና ገጾች እንዳይገባ መከልከል
-    const privatePages = ["about-app.html", "index.html", "soil-moisture.html", "water-quality.html", "ground-water-level.html"];
-    if (privatePages.some(page => currentPage.includes(page)) && isLoggedIn !== "true") {
-        window.location.href = "login.html";
+    // Not logged in: protect dashboard and private pages
+    if (isPrivatePage && sessionResult.status === "unauthenticated") {
+        window.location.replace(loginPage);
+        return;
     }
+    if (isPrivatePage && sessionResult.status === "error") {
+        showSessionError(sessionResult.error);
+    }
+    setSessionLoading(false);
 });
 
+async function getCurrentSession() {
+    try {
+        const response = await fetch(`${API_URL}/api/session`, {
+            credentials: "include"
+        });
+        if (response.status === 401) {
+            localStorage.removeItem("isLoggedIn");
+            return { status: "unauthenticated" };
+        }
+        if (!response.ok) {
+            return { status: "error", error: `Session check failed (${response.status}).` };
+        }
+        const data = await response.json().catch(() => ({}));
+        currentUser = data.user;
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userId", data.user._id || data.user.id || "");
+        localStorage.setItem("userEmail", data.user.email || "");
+        localStorage.setItem("loggedUserName", data.user.firstname || "");
+        return { status: "authenticated", user: data.user };
+    } catch (error) {
+        console.error("Session check failed:", error);
+        return {
+            status: "error",
+            error: "The backend is unreachable. Check that the server is running."
+        };
+    }
+}
+
+function setSessionLoading(isLoading) {
+    const loginButton = document.getElementById("loginBtn");
+    if (loginButton) {
+        loginButton.disabled = isLoading;
+        loginButton.setAttribute("aria-busy", String(isLoading));
+
+        let loadingMessage = document.getElementById("session-loading");
+        if (isLoading && !loadingMessage) {
+            loadingMessage = document.createElement("p");
+            loadingMessage.id = "session-loading";
+            loadingMessage.textContent = "Checking session...";
+            loadingMessage.setAttribute("role", "status");
+            loadingMessage.style.cssText = "text-align:center;margin:12px 0;";
+            loginButton.parentElement.prepend(loadingMessage);
+        } else if (!isLoading && loadingMessage) {
+            loadingMessage.remove();
+        }
+    }
+}
+
+function showSessionError(message) {
+    const error = document.createElement("p");
+    error.textContent = message;
+    error.setAttribute("role", "alert");
+    error.style.cssText = "color:#b00020;text-align:center;margin:12px 0;";
+    const form = document.querySelector(".form");
+    if (form) form.prepend(error);
+}
+// ```
 // ==========================================
 // 3. Registration (ምዝገባ)
 // ==========================================
@@ -62,10 +170,11 @@ async function register() {
         const response = await fetch(`${API_URL}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: "include",
             body: JSON.stringify(userData)
         });
         
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         if (data.success) {
             alert("በተሳካ ሁኔታ ተመዝግበዋል! አሁን መግባት ይችላሉ።");
             window.location.href = "login.html";
@@ -78,42 +187,66 @@ async function register() {
     }
 }
 
-// ==========================================
-// 4. Login (መግቢያ)
-// ==========================================
+// ```javascript
 async function login() {
-    const emailInput = document.getElementById("loginEmail").value.trim().toLowerCase();
-    const passwordInput = document.getElementById("loginPassword").value;
+    const emailElement = document.getElementById("loginEmail");
+    const passwordElement = document.getElementById("loginPassword");
 
-    if(!emailInput || !passwordInput) {
-        return alert("እባክዎ ኢሜይል እና ፓስወርድ ያስገቡ!");
+    if (!emailElement || !passwordElement) {
+        console.error("Login input IDs do not match the HTML.");
+        alert("Login form error. Please check login.html.");
+        return;
+    }
+
+    const email = emailElement.value.trim().toLowerCase();
+    const password = passwordElement.value;
+
+    if (!email || !password) {
+        alert("እባክዎ ኢሜይል እና ፓስወርድ ያስገቡ!");
+        return;
     }
 
     try {
         const response = await fetch(`${API_URL}/api/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: emailInput, password: passwordInput })
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ email, password })
         });
-        
+
         const data = await response.json();
-        
-        if (data.success) {
-            // መረጃዎችን በብሮውዘሩ ላይ ሴቭ ማድረግ
-            localStorage.setItem("isLoggedIn", "true");
-            localStorage.setItem("userEmail", data.user.email);
-            localStorage.setItem("loggedUserName", data.user.firstname);
-            
-            alert("እንኳን ደህና መጡ " + data.user.firstname + "!");
-            window.location.href = "about-app.html";
-        } else {
+
+        if (!response.ok || !data.success || !data.user) {
             alert(data.message || "የገቡት መረጃ ስህተት ነው!");
+            return;
         }
-    } catch (err) {
-        console.error("Login Error:", err);
-        alert("የመግቢያ ስህተት! ሰርቨሩ መብራቱን ወይም ኢንተርኔትዎን ያረጋግጡ።");
+
+        // Save the login state
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userId", data.user._id || data.user.id || "");
+        localStorage.setItem("userEmail", data.user.email || email);
+        localStorage.setItem(
+            "loggedUserName",
+            data.user.firstname || ""
+        );
+
+        // Verify that the state was saved
+        if (localStorage.getItem("isLoggedIn") !== "true") {
+            alert("Login state could not be saved in this browser.");
+            return;
+        }
+
+        alert("እንኳን ደህና መጡ " +
+            (data.user.firstname || "User") + "!");
+
+        window.location.replace("maindashbourd.html");
+
+    } catch (error) {
+        console.error("Login Error:", error);
+        alert("Login failed. Check that the backend is running and accessible.");
     }
 }
+// ```
 
 // ==========================================
 // 5. Forget Password (የይለፍ ቃል መለወጫ)
@@ -175,6 +308,14 @@ async function finishReset() {
 // 6. Logout (መውጫ)
 // ==========================================
 function logout() {
-    localStorage.clear(); // ሁሉንም ዳታ ማጽዳት
-    window.location.href = "login.html";
+    fetch(`${API_URL}/api/logout`, {
+        method: "POST",
+        credentials: "include"
+    }).finally(() => {
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("loggedUserName");
+        window.location.replace("login.html");
+    });
 }

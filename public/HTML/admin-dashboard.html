@@ -5,14 +5,15 @@
     <meta charset="UTF-8">
     <title>Admin - Receipt Manager</title>
 
-    <link rel="stylesheet" href="./CSS/about.css">
+    <link rel="stylesheet" href="../CSS/about.css">
 
     <link rel="icon" href="data:;base64,iVBORw0KGgoAAAAN">
-    <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
+    <link rel="icon" type="image/png" class="headerimg1" href="../../images/HydroOS.png">
 
-    <!-- ✅ ADD API URL -->
     <script>
-        const API_URL = "https://smart-water-monitor-7kui.onrender.com";
+        const API_URL = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+            ? "http://localhost:3000"
+            : "https://smart-water-monitor-7kui.onrender.com";
     </script>
 
     <style>
@@ -37,6 +38,14 @@
             object-fit: cover;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        .receipt-status {
+            font-weight: 700;
+        }
+
+        .receipt-status.pending {
+            color: #b7791f;
         }
 
         .btn-group {
@@ -99,33 +108,124 @@
 
         <div id="receiptsContainer" class="admin-grid"></div>
     </div>
+    <div class="admin-section">
+    <h3>Registered Users Management</h3>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="admin-users-tbody">
+            <!-- ጃቫስክሪፕቱ በዳይናሚክ መረጃውን እዚህ ይሞላዋል -->
+        </tbody>
+    </table>
+</div>
 
     <!-- ✅ SOCKET FIX -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
     <script>
+// ገጹ ሲከፈት የተጠቃሚዎችን ዝርዝር መጫን
+document.addEventListener("DOMContentLoaded", () => {
+    loadAdminUsers();
+});
 
+// 1. ተጠቃሚዎችን ከሰርቨር አምጥቶ በ Table ውስጥ መሙላት
+async function loadAdminUsers() {
+    try {
+        const response = await fetch('/admin/users');
+        const data = await response.json();
+        
+        if (data.success) {
+            const tbody = document.getElementById('admin-users-tbody');
+            tbody.innerHTML = '';
+            
+            data.users.forEach(user => {
+                const statusBadge = user.isBlocked 
+                    ? '<span style="color: red; font-weight: bold;">Blocked 🚫</span>' 
+                    : '<span style="color: green; font-weight: bold;">Active ✅</span>';
+                
+                const blockBtnText = user.isBlocked ? 'Unblock' : 'Block';
+                const blockBtnColor = user.isBlocked ? '#28a745' : '#ffc107';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button onclick="toggleBlockUser('${user._id}')" style="background: ${blockBtnColor}; border:none; padding: 5px 10px; cursor:pointer; border-radius:4px; margin-right:5px;">
+                                ${blockBtnText}
+                            </button>
+                            <button onclick="removeUser('${user._id}')" style="background: #dc3545; color:white; border:none; padding: 5px 10px; cursor:pointer; border-radius:4px;">
+                                Remove
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    } catch (err) {
+        console.error("Error loading users:", err);
+    }
+}
+
+// 2. ተጠቃሚን የማጥፋት (Remove) ተግባር
+async function removeUser(userId) {
+    if (!confirm("እርግጠኛ ዎነህ ይህንን ተጠቃሚ መሰረዝ ትፈልጋለህ?")) return;
+
+    try {
+        const response = await fetch(`/admin/users/${userId}`, { method: 'DELETE' });
+        const data = await response.json();
+        if (data.success) {
+            alert(data.message);
+            loadAdminUsers(); // ሰንጠረዡን በድጋሚ ማደስ
+        }
+    } catch (err) {
+        console.error("Error removing user:", err);
+    }
+}
+
+// 3. ተጠቃሚን የማገድ እና የመልቀቅ (Block / Unblock) ተግባር
+async function toggleBlockUser(userId) {
+    try {
+        const response = await fetch(`/admin/users/${userId}/block`, { method: 'PATCH' });
+        const data = await response.json();
+        if (data.success) {
+            alert(data.message);
+            loadAdminUsers(); // ሰንጠረዡን በድጋሚ ማደስ
+        }
+    } catch (err) {
+        console.error("Error blocking/unblocking user:", err);
+    }
+}
         // 🔐 Admin Security
         if (localStorage.getItem("isAdminLoggedIn") !== "true") {
-            window.location.href = "admin-login.html";
+            window.location.href = "login-admin.html";
         }
 
         // ✅ SOCKET CONNECTION (OPTIONAL REAL-TIME UPDATE)
-        const socket = io(API_URL, {
-            transports: ["websocket", "polling"]
-        });
+        const socket = typeof io === "function"
+            ? io(API_URL, { transports: ["websocket", "polling"] })
+            : null;
 
-        socket.on("connect", () => {
-            console.log("✅ Admin connected:", socket.id);
-        });
+        if (socket) {
+            socket.on("connect", () => {
+                console.log("✅ Admin connected:", socket.id);
+            });
 
-        socket.on("paymentApproved", () => {
-            loadReceipts();
-        });
+            socket.on("paymentApproved", () => {
+                loadReceipts();
+            });
 
-        socket.on("paymentRejected", () => {
-            loadReceipts();
-        });
+            socket.on("paymentRejected", () => {
+                loadReceipts();
+            });
+        }
 
 
         async function loadReceipts() {
@@ -133,7 +233,7 @@
 
             try {
                 // ✅ FIXED API URL
-                const response = await fetch(`${API_URL}/admin/receipts`);
+                const response = await fetch(`${API_URL}/admin/receipts?status=pending`);
                 const receipts = await response.json();
 
                 if (!receipts || receipts.length === 0) {
@@ -151,15 +251,16 @@
                             <img src="${receipt.url}" onclick="window.open(this.src)">
                             <p><strong>User:</strong> ${receipt.username}</p>
                             <p><strong>Service:</strong> ${receipt.serviceName}</p>
+                            <p><strong>Status:</strong> <span class="receipt-status pending">PENDING</span></p>
 
                             <div class="btn-group">
                                 <button class="approve"
-                                    onclick="approvePayment('${receipt._id}', '${receipt.username}', '${receipt.email}', '${receipt.serviceName}')">
+                                    onclick="approvePayment('${receipt._id}')">
                                     Approve
                                 </button>
 
                                 <button class="reject"
-                                    onclick="rejectPayment('${receipt.serviceName}', '${receipt.username}', '${receipt.email}')">
+                                    onclick="rejectPayment('${receipt._id}')">
                                     Reject
                                 </button>
                             </div>
@@ -176,14 +277,14 @@
         }
 
 
-        async function approvePayment(id, username, email, serviceName) {
-            if (!confirm(serviceName + " approve?")) return;
+        async function approvePayment(id) {
+            if (!confirm("Approve this payment?")) return;
 
             try {
                 const response = await fetch(`${API_URL}/admin/approve-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id, username, email, serviceName }) // ✅ email added
+                    body: JSON.stringify({ id })
                 });
 
                 const result = await response.json();
@@ -191,15 +292,18 @@
                 if (result.success) {
                     alert("Approved!");
                     loadReceipts();
+                } else {
+                    alert(result.message || "Unable to approve payment.");
                 }
 
             } catch (error) {
-                alert("Error!");
+                console.error("Approval error:", error);
+                alert("Unable to approve payment.");
             }
         }
 
 
-        async function rejectPayment(serviceName, username, email) {
+        async function rejectPayment(id) {
             const reason = prompt("Reason?");
             if (!reason) return;
 
@@ -207,16 +311,20 @@
                 const response = await fetch(`${API_URL}/admin/reject-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ serviceName, username, email, reason }) // ✅ email added
+                    body: JSON.stringify({ id, reason })
                 });
 
-                if (response.ok) {
+                const result = await response.json();
+                if (response.ok && result.success) {
                     alert("Rejected!");
                     loadReceipts();
+                } else {
+                    alert(result.message || "Unable to reject payment.");
                 }
 
             } catch (error) {
-                alert("Error!");
+                console.error("Rejection error:", error);
+                alert("Unable to reject payment.");
             }
         }
 
@@ -229,12 +337,13 @@
 
         function adminLogout() {
             localStorage.removeItem("isAdminLoggedIn");
-            window.location.href = "admin-login.html";
+            window.location.href = "login-admin.html";
         }
 
         window.onload = loadReceipts;
 
     </script>
+    <!-- <script src="../JS/admin-dashboard.js" defer></script> -->
 
 </body>
 </html>

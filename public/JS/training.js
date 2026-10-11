@@ -6,7 +6,7 @@ function loginUser() {
 
     if (username === "admin" && password === "1234") { // ለምሳሌ
         // በኮምፒውተሩ ላይ መግባቱን መመዝገብ
-        localStorage.setItem("isLoggedIn", "true");
+
         // ወደ ቀጣዩ ገጽ መላክ
         window.location.href = "about-app.html";
     } else {

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About HydroOS</title>
+    <link rel="stylesheet" href="../CSS/login.css">
+    <style>
+        .welcome-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .welcome-actions a {
+            display: inline-block;
+            padding: 12px 22px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .dashboard-link {
+            background: #087f8c;
+            color: #fff;
+        }
+
+        .login-link {
+            border: 1px solid #087f8c;
+            color: inherit;
+        }
+
+        #session-status {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="main-header">
+        <nav class="nav-container">
+            <div class="logo-area">
+                <span class="logo-text">HydroOS</span>
+                <span class="partner-text">| Powered by CAWST</span>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="about-developer.html">About Developer</a></li>
+                <li>
+                    <button type="button" onclick="showCawstInfo()" class="info-btn">
+                        CAWST
+                    </button>
+                </li>
+            </ul>
+
+            <div class="header-controls">
+                <div class="lang-switch">
+                    <button type="button" onclick="changeLanguage('am')" id="btn-am">አማርኛ</button>
+                    <button type="button" onclick="changeLanguage('en')" id="btn-en" class="active">English</button>
+                </div>
+
+                <button type="button" id="dark-mode-toggle" class="mode-btn">
+                    <span id="mode-icon">🌙</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <div id="cawstModal" class="modal">
+        <div class="modal-content">
+            <button type="button" class="close" onclick="closeCawstInfo()">&times;</button>
+            <h2>About CAWST</h2>
+            <p>
+                CAWST (Centre for Affordable Water and Sanitation Technology)
+                provides training and consulting to help people access safe water
+                and sanitation. HydroOS focuses on smart water monitoring and
+                efficient water resource management.
+            </p>
+        </div>
+    </div>
+
+    <main class="main-container">
+        <section class="info-section">
+            <h1>Welcome to HydroOS</h1>
+
+            <p>
+                HydroOS is an innovative Smart Water Monitoring platform designed
+                to connect Water Resources Engineering with modern software technology.
+            </p>
+
+            <p>
+                Our mission is to support clean water access, efficient resource
+                management, and real-time monitoring for university communities.
+            </p>
+
+            <ul class="features-list">
+                <li>Real-time Water Quality Monitoring</li>
+                <li>Automated Alert Systems</li>
+                <li>Water Resource Monitoring</li>
+                <li>Smart Resource Dashboard</li>
+            </ul>
+
+            <p class="quote-text">
+                "Engineering a sustainable future through smart digital solutions."
+            </p>
+        </section>
+
+        <section class="form-section">
+            <div class="form">
+                <div class="between">
+                    <img
+                        src="../../images/mollaspacial2.png"
+                        class="headerimg1"
+                        alt="HydroOS logo"
+                    >
+                </div>
+
+                <h2 id="welcome-title">Welcome to HydroOS</h2>
+
+                <p id="welcome-message">
+                    Access your smart water monitoring dashboard.
+                </p>
+
+                <p id="session-status" role="status" aria-live="polite">
+                    Checking your session...
+                </p>
+
+                <div class="welcome-actions">
+                    <a href="../dashboard.html" id="dashboard-link" class="dashboard-link">
+                        Open Dashboard
+                    </a>
+
+                    <a href="login.html" id="login-link" class="login-link">
+                        Log In
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <section class="footer-section about">
+                <h3>HydroOS</h3>
+                <p>
+                    A modern platform dedicated to smart water management
+                    and quality monitoring.
+                </p>
+            </section>
+
+            <section class="footer-section links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="about-developer.html">About Developer</a></li>
+                    <li><a href="#" onclick="showCawstInfo(); return false;">CAWST Partnership</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                </ul>
+            </section>
+
+            <section class="footer-section contact">
+                <h4>Contact</h4>
+                <p>support@hydroos.com</p>
+                <p>Wollo University, KiOT</p>
+            </section>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 HydroOS | Developed by Molla</p>
+        </div>
+    </footer>
+
+    <script src="../JS/general.js" defer></script>
+    <script src="../JS/ligin-header.js" defer></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const status = document.getElementById("session-status");
+            const title = document.getElementById("welcome-title");
+            const message = document.getElementById("welcome-message");
+            const dashboardLink = document.getElementById("dashboard-link");
+            const loginLink = document.getElementById("login-link");
+
+            // Change this URL if your actual dashboard is in another location.
+            const dashboardUrl = "../dashboard.html";
+            dashboardLink.href = dashboardUrl;
+
+            try {
+                const response = await fetch(
+                    "http://127.0.0.1:3000/api/session",
+                    {
+                        method: "GET",
+                        credentials: "include",
+                        headers: {
+                            "Accept": "application/json"
+                        }
+                    }
+                );
+
+                if (response.status === 401 || response.status === 403) {
+                    status.textContent = "Please log in to access your dashboard.";
+                    loginLink.hidden = false;
+                    dashboardLink.hidden = true;
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error("Session API returned HTTP " + response.status);
+                }
+
+                const data = await response.json();
+
+                // Adapt this condition to the actual response format of your API.
+                const authenticated = Boolean(
+                    data.authenticated === true ||
+                    data.isAuthenticated === true ||
+                    data.user ||
+                    data.session
+                );
+
+                if (authenticated) {
+                    title.textContent = "Welcome back!";
+                    message.textContent =
+                        "Your session is active. Continue to your HydroOS dashboard.";
+                    status.textContent = "You are signed in.";
+                    loginLink.hidden = true;
+
+                    // Redirect only after the backend confirms authentication.
+                    // window.location.replace(dashboardUrl);
+                } else {
+                    status.textContent = "Please log in to continue.";
+                    dashboardLink.hidden = true;
+                    loginLink.hidden = false;
+                }
+            } catch (error) {
+                console.error("Unable to verify HydroOS session:", error);
+
+                status.textContent =
+                    "We could not verify your session. Please check that the backend is running.";
+
+                // Do not automatically redirect on a network or server error.
+                dashboardLink.hidden = true;
+                loginLink.hidden = false;
+            }
+        });
+    </script>
+</body>
+</html>

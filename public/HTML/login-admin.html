@@ -19,11 +19,13 @@
         <input type="password" id="adminPass" placeholder="Password...">
         <button onclick="checkAdmin()">ግባ</button>
     </div>
-<script src="../socket.io/socket.io.js"></script>
    <script>
     async function checkAdmin() {
         const passwordInput = document.getElementById('adminPass');
         const passwordValue = passwordInput.value;
+        const apiUrl = ["localhost", "127.0.0.1"].includes(window.location.hostname)
+            ? "http://localhost:3000"
+            : "https://smart-water-monitor-7kui.onrender.com";
 
         if (!passwordValue) {
             alert("እባክዎ መጀመሪያ የይለፍ ቃል ያስገቡ!");
@@ -32,7 +34,7 @@
 
         try {
             // የ fetch አድራሻውን ሙሉ በሙሉ ለማግኘት እንዲህ ተጠቀም
-            const response = await fetch(`${window.location.origin}/admin/login`, {
+            const response = await fetch(`${apiUrl}/admin/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password: passwordValue })
@@ -45,7 +47,7 @@
                 localStorage.setItem("isAdminLoggedIn", "true"); 
             // username ስላልተበየነ ቀለል ባለ መልዕክት እንተካው
                 alert("እንኳን ደህና መጡ አድሚን!");
-                window.location.href = '/admin-dashboard';
+                window.location.href = 'admin-dashboard.html';
             } else {
                 alert(data.message || "የይለፍ ቃል ስህተት ነው!");
             }
@@ -58,7 +60,7 @@
 
     function adminLogout() {
         localStorage.removeItem("isAdminLoggedIn");
-        window.location.href = "/admin-login";
+        window.location.href = "login-admin.html";
     }
 </script>
 </body>

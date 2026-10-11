@@ -1,133 +1,427 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - HydroOS Platform</title>
+    <link
+      rel="icon"
+      type="image/png"
+      class="headerimg1"
+      href="../../images/HydroOS.png"
+    />
+    <link rel="stylesheet" href="../CSS/loginnew.css" />
+    <link rel="stylesheet" href="../CSS/dashbourd.css" />
+  </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - HydroOS Site</title>
-    <link rel="stylesheet" href="../CSS/login.css">
-</head>
-
-<body>
+  <body>
+    <!-- Main Header -->
     <header class="main-header">
-        <nav class="nav-container">
-            <div class="logo-area">
-                <span class="logo-text">HydroOS</span>
-                <span class="partner-text">| Powered by CAWST</span>
+      <nav class="nav-container">
+        <div class="logo-area">
+          <span class="logo-text">HydroOS</span>
+          <span class="partner-text">| Powered by CAWST</span>
+        </div>
+
+        <ul class="nav-links">
+          <li>
+            <a href="dashboard.html" class="active" data-key="dashboard"
+              >Dashboard</a
+            >
+          </li>
+          <li><a href="#monitoring" data-key="monitoringNav">Monitoring</a></li>
+          <li><a href="#education" data-key="educationNav">Education</a></li>
+          <li><a href="about-developer.html" data-key="about">About</a></li>
+        </ul>
+
+        <div class="header-controls">
+          <div class="lang-switch">
+            <button onclick="changeLanguage('am')" id="btn-am">አማርኛ</button>
+            <button onclick="changeLanguage('en')" id="btn-en" class="active">
+              English
+            </button>
+          </div>
+
+          <button id="dark-mode-toggle" class="mode-btn">
+            <span id="mode-icon">🌙</span>
+          </button>
+
+          <div class="user-profile-menu">
+            <!-- Profile Avatar Wrapper -->
+            <div
+              class="profile-avatar-wrapper"
+              onclick="triggerProfileUpload()"
+              title="Click to change profile picture"
+            >
+              <img id="userAvatarImg" src="" alt="Profile Photo" />
+              <div id="userAvatarInitials" class="avatar-initials">MD</div>
             </div>
 
-            <ul class="nav-links">
-                <li><a href="#" data-key="home">Home</a></li>
-                <li><a href="about-me.html" data-key="about">About</a></li>
-                <li><button onclick="showCawstInfo()" class="info-btn" data-key="cawst">CAWST</button></li>
-            </ul>
+            <input
+              type="file"
+              id="profileImageInput"
+              accept="image/*"
+              style="display: none"
+              onchange="updateProfileImage(event)"
+            />
 
-            <div class="header-controls">
-                <div class="lang-switch">
-                    <button onclick="changeLanguage('am')" id="btn-am">አማርኛ</button>
-                    <button onclick="changeLanguage('en')" id="btn-en" class="active">English</button>
-                </div>
-
-                <button id="dark-mode-toggle" class="mode-btn">
-                    <span id="mode-icon">🌙</span>
-                </button>
-
-                <button onclick="goToAdmin()" class="admin-btn" data-key="admin">Admin</button>
+            <!-- ቋሚ ቦታ ያለው የስም ማሳያ (Static width container to stop shaking) -->
+            <div class="username-container">
+              <span id="userNameDisplay">Welcome, User</span>
             </div>
-        </nav>
+
+            <!-- Logout Button -->
+            <button onclick="logout()" class="logout-btn" data-key="logout">
+              Logout
+            </button>
+          </div>
+        </div>
+      </nav>
     </header>
 
-    <div id="cawstModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeCawstInfo()">&times;</span>
-            <h2>About CAWST</h2>
-            <p>CAWST (Centre for Affordable Water and Sanitation Technology) is a Canadian charity that provides
-                training and consulting to help people access safe water and sanitation. HydroOS uses CAWST standards
-                for water treatment monitoring.</p>
+    <!-- Main Content Container -->
+    <main class="dashboard-container">
+      <!-- Welcome Banner -->
+      <section class="welcome-banner">
+        <div class="banner-text">
+          <h1 data-key="dashWelcome">Welcome to HydroOS Dashboard</h1>
+          <p data-key="dashSubtitle">
+            Integrated Smart Water Monitoring &amp; Engineering Education Hub
+          </p>
         </div>
-    </div>
-
-    <main class="main-container">
-        <div class="info-section">
-            <h1 data-key="welcome">Welcome to HydroOS</h1>
-            <p>
-                <strong data-key="logoText">HydroOS</strong> 
-                <span data-key="description">is an innovative Smart Water Monitoring platform designed to bridge the gap between Water Engineering and Software Technology.</span>
-            </p>
-            <p data-key="missionText">
-                Developed to ensure clean water access and efficient resource management,
-                our system provides real-time data tracking for university communities.
-            </p>
-
-            <ul class="features-list">
-                <li data-key="feature1">Real-time Water Quality Monitoring</li>
-                <li data-key="feature2">Automated Alert Systems</li>
-                <li data-key="feature3">Secure Payment Tracking</li>
-                <li data-key="feature4">Smart Resource Dashboard</li>
-            </ul>
-
-            <p class="quote-text" data-key="quote">
-                "Engineering a sustainable future through smart digital solutions."
-            </p>
+        <div class="system-status">
+          <span class="status-indicator online"></span>
+          <span data-key="systemStatus">System Status: All Sensors Active</span>
         </div>
+      </section>
 
-        <div class="form-section">
-            <div class="form">
-                <div class="between">
-                    <img src="/images/mollaspacial2.png" class="headerimg1" alt="Logo">
-                </div>
-                <h2 data-key="loginTitle">Login</h2>
+      <!-- SECTION 1: SMART WATER MONITORING SERVICES -->
+      <section id="monitoring" class="services-section">
+        <h2 class="section-title">
+          <span class="icon">💧</span>
+          <span data-key="monitoringTitle"
+            >Smart Water Monitoring Services</span
+          >
+        </h2>
 
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Password" required>
-
-                <button onclick="login()" data-key="loginBtn">Login</button><br><br>
-
-                <p><a href="forget.html" class="forget-passward" data-key="forgot">Forgot Password?</a></p>
-
-                <hr>
-                <h3 data-key="loginWith">Login with</h3>
-                <button class="social google">Google</button>
-                <button class="social facebook">Facebook</button>
-
-                <p>
-                    <span data-key="noAccount">No account?</span> 
-                    <a href="register.html" data-key="register">Register</a>
-                </p>
+        <div class="card-grid">
+          <!-- Card 1: Ground Water with Payment & Access Control -->
+          <!-- Card 1: Ground Water Monitor -->
+          <div class="dashboard-card" id="card-ground">
+            <div class="card-header">
+              <h3>Groundwater Monitor</h3>
+              <!-- የክፍያ ሁኔታን የሚያሳይ (Closed / Open Badge) -->
+              <span
+                class="badge closed"
+                id="closed-btn-ground"
+                style="background: #ffe2e2; color: #dc3545"
+                >CLOSED 🔒</span
+              >
+              <span
+                class="badge live"
+                id="open-btn-ground"
+                style="display: none; background: #d1e7dd; color: #0f5132"
+                >OPEN &amp; LIVE 🟢</span
+              >
             </div>
+            <p>Real-time depth, aquifer levels, and flow rate analytics.</p>
+
+            <!-- የከርሰ ምድር ውሃ መጠን መረጃ (Current Water Table Depth) -->
+            <div class="card-metric">
+              <span class="metric-val" id="groundwater-depth-val">-- m</span>
+              <span class="metric-label">Current Water Table Depth</span>
+            </div>
+            <!-- Payment & Receipt Upload Modal -->
+            <div id="paymentModal" class="modal-overlay" style="display: none">
+              <div class="payment-modal-content">
+                <span class="close-modal" onclick="closePaymentModal()"
+                  >&times;</span
+                >
+                <h2>💳 Pay for Service Access</h2>
+                <p>እባክዎ ከታች ባሉት አካውንቶች ክፍያውን በመፈጸም ደረሰኝዎን ይጫኑ:</p>
+
+                <div class="payment-accounts-box">
+                  <p>
+                    🏦 <strong>Commercial Bank (CBE):</strong>
+                    <code>09343434343</code>
+                  </p>
+                  <p>
+                    📱 <strong>Telebirr:</strong> <code>10000434232245</code>
+                  </p>
+                  <p class="account-name">ስም: <strong>Molla Derbew</strong></p>
+                </div>
+
+                <div class="receipt-upload-group">
+                  <label for="receiptFile"
+                    >📸 የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot) ይምረጡ:</label
+                  >
+                  <input
+                    type="file"
+                    id="receiptFile"
+                    accept="image/*"
+                    class="file-input"
+                  />
+                </div>
+
+                <button class="action-btn edu-btn" onclick="submitReceipt()">
+                  ጥያቄውን ወደ አድሚን ላክ (Submit)
+                </button>
+              </div>
+            </div>
+            <!-- ክፍያ የሚጠይቅ ቁልፍ (አድሚን ካላጸደቀው ክፍያ ይጠይቃል) -->
+            <button
+              class="action-btn pay-btn"
+              id="pay-btn-ground"
+              onclick="requestPayment('Groundwater Monitor', 'ground')"
+            >
+              💳 Pay for Access
+            </button>
+            <!-- አድሚን ሲያጸድቀው የሚከፈት ቁልፍ -->
+
+            <button
+              class="action-btn pay-btn"
+              class="badge live"
+             id="open-btn-ground" 
+              onclick="openPaymentModal('Groundwater Monitor', 'ground')"
+            >
+              💳 Open the Access
+            </button>
+          </div>
+
+          <!-- Card 2: Precision Irrigation -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3>Precision Irrigation</h3>
+              <span class="badge active">AUTO</span>
+            </div>
+            <p>Smart soil moisture tracking & automated drip scheduling.</p>
+            <div class="card-metric">
+              <span class="metric-val">68 %</span>
+              <span class="metric-label">Soil Moisture</span>
+            </div>
+            <button class="action-btn" onclick="openModule('Irrigation')">
+              Manage Valves
+            </button>
+                  <!-- Payment & Receipt Upload Modal -->
+            <!-- <div id="paymentModal" class="modal-overlay" style="display: none">
+              <div class="payment-modal-content">
+                <span class="close-modal" onclick="closePaymentModal()"
+                  >&times;</span
+                >
+                <h2>💳 Pay for Service Access</h2>
+                <p>እባክዎ ከታች ባሉት አካውንቶች ክፍያውን በመፈጸም ደረሰኝዎን ይጫኑ:</p>
+
+                <div class="payment-accounts-box">
+                  <p>
+                    🏦 <strong>Commercial Bank (CBE):</strong>
+                    <code>09343434343</code>
+                  </p>
+                  <p>
+                    📱 <strong>Telebirr:</strong> <code>10000434232245</code>
+                  </p>
+                  <p class="account-name">ስም: <strong>Molla Derbew</strong></p>
+                </div>
+
+                <div class="receipt-upload-group">
+                  <label for="receiptFile"
+                    >📸 የክፍያ ደረሰኝ ፎቶ (Receipt Screenshot) ይምረጡ:</label
+                  >
+                  <input
+                    type="file"
+                    id="receiptFile"
+                    accept="image/*"
+                    class="file-input"
+                  />
+                </div>
+
+                <button class="action-btn edu-btn" onclick="submitReceipt()">
+                  ጥያቄውን ወደ አድሚን ላክ (Submit)
+                </button>
+              </div>
+            </div> -->
+            <!-- ክፍያ የሚጠይቅ ቁልፍ (አድሚን ካላጸደቀው ክፍያ ይጠይቃል) -->
+            <!-- <button
+              class="action-btn pay-btn"
+              id="pay-btn-ground"
+              onclick="requestPayment('Groundwater Monitor', 'ground')"
+            >
+              💳 Pay for Access
+            </button> -->
+            <!-- አድሚን ሲያጸድቀው የሚከፈት ቁልፍ -->
+
+            <!-- <button
+              class="action-btn pay-btn"
+              class="badge live"
+             id="open-btn-ground" 
+              onclick="openPaymentModal('Groundwater Monitor', 'ground')"
+            >
+              💳 Open the Access
+            </button> -->
+          </div>
+
+          <!-- Card 3: Water Quality -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3>Water Quality Control</h3>
+              <span class="badge ok">GOOD</span>
+            </div>
+            <p>
+              Real-time pH, turbidity, salinity, and contamination detection.
+            </p>
+            <div class="card-metric">
+              <span class="metric-val">7.2 pH</span>
+              <span class="metric-label">Turbidity: 1.2 NTU</span>
+            </div>
+            <button class="action-btn" id="waterquality" onclick="openModule('waterquality')">
+              Quality Metrics
+            </button>
+          </div>
+
+          <!-- Card 4: Tank & Storage -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h3>Tank &amp; Storage Control</h3>
+              <span class="badge ok">85% Full</span>
+            </div>
+            <p>Reservoir volume tracking, pressure & alert systems.</p>
+            <div class="card-metric">
+              <span class="metric-val">12,500 L</span>
+              <span class="metric-label">Available Capacity</span>
+            </div>
+            <button class="action-btn" id="tanklevel" onclick="openModule('tanklevel')">
+              Monitor Tanks
+            </button>
+          </div>
         </div>
+      </section>
+
+      <!-- SECTION 2: EDUCATION & LEARNING MODULES -->
+      <section id="education" class="services-section">
+        <h2 class="section-title">
+          <span class="icon">🎓</span>
+          <span data-key="educationTitle">Educational &amp; Learning Hub</span>
+        </h2>
+
+        <div class="card-grid">
+          <!-- Education Card 1: University -->
+          <div class="dashboard-card edu-card">
+            <div class="card-header">
+              <h3>University Modules</h3>
+              <span class="badge edu">DEGREE / KiOT</span>
+            </div>
+            <p>
+              Advanced Water Engineering, Fluid Mechanics, &amp; IoT System
+              Design.
+            </p>
+            <ul class="card-list">
+              <li>📚 Hydrogeology &amp; Aquifer Modeling</li>
+              <li>💻 Smart Water Sensor Programming</li>
+              <li>📊 CAWST Treatment Design</li>
+            </ul>
+            <button
+              class="action-btn edu-btn"
+              onclick="openEducation('university')"
+            >
+              Access University Portal
+            </button>
+          </div>
+
+          <!-- Education Card 2: High School -->
+          <div class="dashboard-card edu-card">
+            <div class="card-header">
+              <h3>High School Science</h3>
+              <span class="badge edu">STEM</span>
+            </div>
+            <p>
+              Interactive basics on water cycles, environmental protection, &
+              chemistry.
+            </p>
+            <ul class="card-list">
+              <li>🧪 Basics of Water Testing</li>
+              <li>🌱 Conservation &amp; Ecosystems</li>
+              <li>⚡ Introduction to Sensors</li>
+            </ul>
+            <button
+              class="action-btn edu-btn"
+              onclick="openEducation('highschool')"
+            >
+              Access STEM Lessons
+            </button>
+          </div>
+
+          <!-- Education Card 3: Video Library -->
+          <div class="dashboard-card edu-card">
+            <div class="card-header">
+              <h3>Video &amp; Practical Library</h3>
+              <span class="badge video">MEDIA</span>
+            </div>
+            <p>
+              Video tutorials, lab field demonstrations, and practical system
+              installation guides.
+            </p>
+            <ul class="card-list">
+              <li>🎥 Hardware Setup Guides</li>
+              <li>🎥 Field Sensor Calibration</li>
+              <li>🎥 CAWST Filter Maintenance</li>
+            </ul>
+            <button
+              class="action-btn edu-btn"
+              onclick="openEducation('videos')"
+            >
+              Watch Tutorials
+            </button>
+          </div>
+        </div>
+      </section>
     </main>
 
+    <!-- Main Footer -->
     <footer class="main-footer">
-        <div class="footer-content">
-            <div class="footer-section about">
-                <h3>HydroOS</h3>
-                <p data-key="footerAbout">A modern platform dedicated to smart water management and quality monitoring.</p>
-            </div>
-
-            <div class="footer-section links">
-                <h4 data-key="quickLinks">Quick Links</h4>
-                <ul>
-                    <li><a href="about-me.html" data-key="aboutDev">About Developer</a></li>
-                    <li><a href="#" onclick="showCawstInfo()" data-key="cawstPartner">CAWST Partnership</a></li>
-                    <li><a href="privacy.html" data-key="privacy">Privacy Policy</a></li>
-                </ul>
-            </div>
-
-            <div class="footer-section contact">
-                <h4 data-key="contact">Contact</h4>
-                <p>📧 support@hydroos.com</p>
-                <p>📍 Wollo University, KiOT</p>
-            </div>
+      <div class="footer-content">
+        <div class="footer-section about">
+          <h3>HydroOS</h3>
+          <p data-key="footerAbout">
+            A modern platform dedicated to smart water management, IoT
+            monitoring, and digital engineering education.
+          </p>
         </div>
 
-        <div class="footer-bottom">
-            <p>&copy; 2026 HydroOS | <span data-key="devBy">Developed by Molla</span></p>
+        <div class="footer-section links">
+          <h4 data-key="quickLinks">Quick Links</h4>
+          <ul>
+            <li>
+              <a href="about-developer.html" data-key="aboutDev"
+                >About Developer</a
+              >
+            </li>
+            <li><a href="#monitoring">Water Monitoring</a></li>
+            <li><a href="#education">Learning Hub</a></li>
+            <li>
+              <a href="privacy.html" data-key="privacy">Privacy Policy</a>
+            </li>
+          </ul>
         </div>
+
+        <div class="footer-section contact">
+          <h4 data-key="contactTitle">Contact</h4>
+          <p>📧 support@hydroos.com</p>
+          <p>📍 Wollo University, KiOT</p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>
+          &copy; 2026 HydroOS |
+          <span data-key="developedBy">Developed by Molla</span>
+        </p>
+      </div>
     </footer>
 
-    <script src="../JS/general.js"></script>
-    <script src="../JS/login-header.js"></script>
-</body>
-
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script src="../JS/general.js" defer></script>
+    <script src="../JS/ligin-header.js" defer></script>
+    <script src="../JS/script.js"></script>
+    <!-- <script src="../JS/dashboard.js" defer></script> -->
+  </body>
 </html>

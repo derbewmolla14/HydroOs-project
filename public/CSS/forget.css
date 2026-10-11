@@ -1,48 +1,378 @@
 
-body{
-    height:100vh;
-    background: linear-gradient(to right, #8ec5d6, #cfd9df);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-family: Arial, sans-serif;
+/* =========================================
+   HydroOS - Reset Password Page
+   Professional Responsive Design
+   ========================================= */
+
+:root {
+    --primary: #087f8c;
+    --primary-dark: #075e68;
+    --primary-light: #e8f8f8;
+    --accent: #f4b942;
+    --text: #203442;
+    --muted: #687985;
+    --white: #ffffff;
+    --border: #dce6eb;
+    --danger: #d94343;
+    --shadow: 0 18px 55px rgba(7, 45, 58, 0.20);
 }
 
-
-h2{
-    text-align:center;
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-input{
-    width:100%;
-    padding:12px;
-    margin:10px 0;
-    border:1px solid #ccc;
-    border-radius:5px;
+html {
+    min-height: 100%;
+    scroll-behavior: smooth;
 }
 
-button{
-    width:50%;
-    padding:12px;
-    background:#2f8f88;
-    color:#ffffff;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-size: 20px;
-}
-.submit{
-    color:white;
-    font-size: 30px;
-}
-button:hover{
-    background:#267872;
-}
-.form{
-    width:400px;
-    background:#fff;
-    padding:40px;
-    border-radius:8px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.15);
+body {
+    min-height: 100vh;
+    padding: 30px 18px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-family: "Segoe UI", "Noto Sans Ethiopic",
+                 "Nyala", Arial, sans-serif;
+
+    color: var(--text);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(3, 39, 52, 0.88),
+            rgba(8, 127, 140, 0.68)
+        ),
+        url("../images/images/image/images/good wallpaper.jpg")
+        center / cover fixed no-repeat;
 }
 
+/* =========================================
+   RESET PASSWORD CARD
+   ========================================= */
+
+.form {
+    position: relative;
+    width: 100%;
+    max-width: 450px;
+    padding: 38px 34px;
+
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+
+    box-shadow: var(--shadow);
+
+    animation: cardEnter 0.55s ease both;
+}
+
+/* Water-inspired top accent */
+.form::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 30px;
+    right: 30px;
+    height: 5px;
+
+    background: linear-gradient(
+        90deg,
+        var(--primary-dark),
+        #21b4b0,
+        var(--accent)
+    );
+
+    border-radius: 0 0 8px 8px;
+}
+
+/* Heading */
+.form h2 {
+    margin-bottom: 12px;
+
+    color: var(--primary-dark);
+    font-size: clamp(25px, 5vw, 30px);
+    font-weight: 800;
+    line-height: 1.35;
+    text-align: center;
+    letter-spacing: -0.5px;
+}
+
+/* Instructions */
+.instruction {
+    margin-bottom: 18px;
+
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+    text-align: center;
+}
+
+/* =========================================
+   INPUT FIELDS
+   ========================================= */
+
+.form input {
+    display: block;
+    width: 100%;
+    min-height: 51px;
+    margin: 13px 0;
+    padding: 14px 15px;
+
+    background: #f7fafb;
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    outline: none;
+
+    font-family: inherit;
+    font-size: 15px;
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+}
+
+.form input::placeholder {
+    color: #8b99a4;
+    opacity: 1;
+}
+
+.form input:hover {
+    border-color: #a9cbd0;
+}
+
+.form input:focus {
+    background: var(--white);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(8, 127, 140, 0.12);
+}
+
+.form input:focus:invalid {
+    border-color: #d58a55;
+}
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+
+.form button {
+    display: block;
+    width: 100%;
+    min-height: 49px;
+    margin-top: 17px;
+    padding: 13px 18px;
+
+    background: linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary-dark)
+    );
+
+    color: var(--white);
+
+    border: none;
+    border-radius: 11px;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 750;
+
+    cursor: pointer;
+
+    box-shadow: 0 5px 13px rgba(8, 127, 140, 0.17);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.form button:hover {
+    background: linear-gradient(
+        135deg,
+        #0997a3,
+        #064d57
+    );
+
+    transform: translateY(-2px);
+    box-shadow: 0 8px 19px rgba(8, 127, 140, 0.25);
+}
+
+.form button:active {
+    transform: translateY(0);
+}
+
+.form button:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* =========================================
+   OTP VERIFICATION & NEW PASSWORD
+   ========================================= */
+
+#otp-section,
+#password-section {
+    display: none;
+    margin-top: 23px;
+    padding: 20px;
+
+    background: #f2f9fa;
+    border: 1px solid #d8ebed;
+    border-radius: 14px;
+
+    animation: sectionEnter 0.3s ease both;
+}
+
+#otp-section .instruction,
+#password-section .instruction {
+    margin-bottom: 13px;
+    text-align: left;
+    font-weight: 500;
+}
+
+#otp-section input {
+    text-align: center;
+    letter-spacing: 5px;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+#password-section input {
+    letter-spacing: 0.3px;
+}
+
+/* =========================================
+   CANCEL LINK
+   ========================================= */
+
+.form > p:last-child {
+    margin-top: 25px !important;
+    padding-top: 18px;
+
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+.form a {
+    display: inline-block;
+    padding: 5px 12px;
+
+    color: var(--primary-dark);
+    font-size: 14px;
+    font-weight: 700;
+
+    text-decoration: none;
+    border-radius: 7px;
+
+    transition: color 0.2s ease,
+                background 0.2s ease;
+}
+
+.form a:hover {
+    color: var(--primary);
+    background: var(--primary-light);
+    text-decoration: underline;
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+
+@keyframes cardEnter {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes sectionEnter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 768px) {
+    body {
+        background-attachment: scroll;
+    }
+
+    .form {
+        max-width: 430px;
+        padding: 32px 26px;
+    }
+}
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 480px) {
+    body {
+        padding: 20px 13px;
+    }
+
+    .form {
+        padding: 30px 20px;
+        border-radius: 17px;
+    }
+
+    .form h2 {
+        font-size: 25px;
+    }
+
+    .instruction {
+        font-size: 13px;
+    }
+
+    .form input {
+        min-height: 49px;
+        font-size: 14px;
+    }
+
+    .form button {
+        min-height: 47px;
+        font-size: 14px;
+    }
+
+    #otp-section,
+    #password-section {
+        padding: 15px;
+    }
+}
+
+/* =========================================
+   ACCESSIBILITY
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

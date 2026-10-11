@@ -1,0 +1,326 @@
+/* Dashboard Base Layout */
+.dashboard-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* Welcome Banner */
+.welcome-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    margin-bottom: 35px;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2);
+}
+
+.welcome-banner h1 {
+    margin: 0 0 5px 0;
+    font-size: 1.8rem;
+}
+
+.welcome-banner p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.status-indicator.online {
+    width: 10px;
+    height: 10px;
+    background-color: #28a745;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #28a745;
+}
+
+/* Section Styling */
+.services-section {
+    margin-bottom: 45px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.5rem;
+    color: #333;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Grid & Cards */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #1e293b;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.badge.live { background: #ffe2e2; color: #dc3545; }
+.badge.active { background: #e3f2fd; color: #0d6efd; }
+.badge.ok { background: #d1e7dd; color: #0f5132; }
+.badge.edu { background: #f3e8ff; color: #6b21a8; }
+.badge.video { background: #fff3cd; color: #664d03; }
+
+.card-metric {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.metric-val {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.card-list {
+    padding-left: 18px;
+    margin: 10px 0;
+    font-size: 0.88rem;
+    color: #475569;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s ease;
+}
+
+.action-btn:hover {
+    background-color: #0056b3;
+}
+
+.action-btn.edu-btn {
+    background-color: #28a745;
+}
+
+.action-btn.edu-btn:hover {
+    background-color: #1e7e34;
+}
+
+.user-profile-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logout-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* User Profile Menu */
+.user-profile-menu {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* Fixed container to prevent shifting */
+.profile-avatar-wrapper {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #007bff;
+    background-color: #f1f5f9;
+    flex-shrink: 0;
+}
+
+/* Default state: hide both until JS adds the exact class */
+#userAvatarImg,
+.avatar-initials {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none; /* JS ከማየቱ በፊት ተደብቀዋል */
+}
+
+/* When has-image class is active, show image only */
+.profile-avatar-wrapper.has-image #userAvatarImg {
+    display: block;
+    object-fit: cover;
+    z-index: 2;
+}
+
+/* When has-initials class is active, show initials only */
+.profile-avatar-wrapper.has-initials .avatar-initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    user-select: none;
+    z-index: 1;
+}
+
+/* User Display Name */
+#userNameDisplay {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #333333;
+    white-space: nowrap;
+}
+
+body.dark-mode #userNameDisplay {
+    color: #ffffff;
+}
+
+/* Payment Modal Overlay & Content */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.payment-modal-content {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    position: relative;
+    text-align: center;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #64748b;
+}
+
+.payment-accounts-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+.payment-accounts-box code {
+    background: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #0f172a;
+}
+
+.account-name {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.receipt-upload-group {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.receipt-upload-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1e293b;
+}
+
+.file-input {
+    width: 100%;
+    padding: 10px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 6px;
+    background: #f8fafc;
+    cursor: pointer;
+}

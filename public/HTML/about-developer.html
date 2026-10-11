@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>About Developer</title>
-    <link rel="stylesheet" href="./CSS/style.css">
-     <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
-    <style>
+    <link rel="stylesheet" href="../CSS/about-developer.css">
+     <link rel="icon" type="image/png" class="headerimg1" href="../../images/HydroOS.png">
+    <!-- <style>
         /* --- Header & Navigation Setup --- */
 header {
     position: fixed;
@@ -93,7 +93,7 @@ body {
     margin: 0;
     padding-top: 80px; /* Header ገጹን እንዳይሸፍነው */
 }
-    </style>
+    </style> -->
 </head>
 
 <body>
@@ -102,7 +102,7 @@ body {
     <nav class="gap-2">
         <div class="logo">HydroOS</div>
         <ul class="nav-links">
-            <li><a href="/about-app.html">Home</a></li>
+            <li><a href="about-app.html">Home</a></li>
             <li><button onclick="goToAdmin()" class="admin-nav-btn">Admin</button></li>
             <li><button onclick="logout()" class="logout-btn">Logout</button></li>
         </ul>
@@ -119,7 +119,7 @@ body {
 
         <div class="about-card">
             <div class="profile-img">
-                <img src="../images/mollaspacial3.png" alt="Molla"
+                <img src="../../images/mollaspacial1.png" alt="Molla"
                     style="width:150px; border-radius:50%; border: 3px solid #f1c40f;">
             </div>
 
@@ -163,18 +163,21 @@ body {
         </div>
 
         <br>
-        <a href="index.html" id="back-btn" class="btn">ወደ ዳሽቦርድ ተመለስ</a>
+        <a href="login.html" id="back-btn" class="btn">ወደ ዳሽቦርድ ተመለስ</a>
     </div>
-         if (localStorage.getItem("isLoggedIn") === "true") {
+         <!-- <script>
+            if (localStorage.getItem("isLoggedIn") === "true") {
                 document.body.style.display = "block";
             }
 
             else {
                 window.location.href = "login.html";
             }
+         </script> -->
 
-    <script src="../socket.io/socket.io.js"></script>
-    <script src="../JS/about-developer.js"></script>
+    <script src="../JS/general.js" defer></script>
+    <script src="../JS/ligin-header.js" defer></script>
+    <script src="../JS/about-developer.js" defer></script>
 </body>
 
 </html>

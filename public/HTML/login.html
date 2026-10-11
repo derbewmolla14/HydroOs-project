@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - HydroOS Site</title>
-    <link rel="stylesheet" href="../CSS/login.css">
+    <link rel="icon" type="image/png" class="headerimg1" href="../../images/HydroOS.png">
+    <link rel="stylesheet" href="../CSS/loginnew.css">
 </head>
 
 <body>
@@ -17,8 +18,8 @@
             </div>
 
             <ul class="nav-links">
-                <li><a href="#" data-key="home">Home</a></li>
-                <li><a href="about-me.html" data-key="about">About</a></li>
+                <li><a href="login.html" data-key="home">Home</a></li>
+                <li><a href="about-developer.html" data-key="about">About</a></li>
                 <li><button onclick="showCawstInfo()" class="info-btn" data-key="cawst">CAWST</button></li>
             </ul>
 
@@ -111,7 +112,7 @@
             <div class="footer-section links">
                 <h4 data-key="quickLinks">Quick Links</h4>
                 <ul>
-                    <li><a href="about-me.html" data-key="aboutDev">About Developer</a></li>
+                    <li><a href="about-developer.html" data-key="aboutDev">About Developer</a></li>
                     <li><a href="#" onclick="showCawstInfo()" data-key="cawstPartner">CAWST Partnership</a></li>
                     <li><a href="privacy.html" data-key="privacy">Privacy Policy</a></li>
                 </ul>
@@ -128,10 +129,9 @@
             <p>&copy; 2026 HydroOS | <span data-key="developedBy">Developed by Molla</span></p>
         </div>
     </footer>
-
-    <script src="../socket.io/socket.io.js"></script>
-    <script src="../JS/general.js"></script>
-    <script src="../JS/login-header.js"></script>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <script src="../JS/general.js" defer></script>
+    <script src="../JS/ligin-header.js" defer></script>
 </body>
 
 </html>

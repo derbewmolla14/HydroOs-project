@@ -1,0 +1,115 @@
+/* Groundwater Module Specific Styles */
+.gw-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.gw-banner {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.gw-banner h1 {
+    margin: 0 0 8px 0;
+    font-size: 1.7rem;
+}
+
+.gw-banner p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.gw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.gw-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.gw-card h3 {
+    margin: 0 0 15px 0;
+    font-size: 1rem;
+    color: #475569;
+}
+
+.gw-value {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: bold;
+    color: #0284c7;
+    margin-bottom: 10px;
+}
+
+.gw-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.gw-status.normal { background: #d1e7dd; color: #0f5132; }
+.gw-status.active { background: #e3f2fd; color: #0d6efd; }
+
+.gw-control-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.gw-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 25px;
+}
+
+.gw-panel h2 {
+    margin-top: 0;
+    font-size: 1.2rem;
+    color: #1e293b;
+}
+
+.btn-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.log-box {
+    background: #0f172a;
+    color: #38bdf8;
+    font-family: monospace;
+    padding: 15px;
+    border-radius: 6px;
+    height: 140px;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    margin-top: 15px;
+}
+
+.back-btn {
+    text-decoration: none;
+    background: #475569;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.back-btn:hover {
+    background: #334155;
+}

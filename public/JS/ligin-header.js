@@ -158,4 +158,4 @@ window.onclick = function(event) {
     if (event.target == modal) modal.style.display = "none";
 };
 
-function goToAdmin() { window.location.href = "admin.html"; }
+function goToAdmin() { window.location.href = "login-admin.html"; }
