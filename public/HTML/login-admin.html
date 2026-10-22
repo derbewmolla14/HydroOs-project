@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Login</title>
-    <link rel="stylesheet" href="/CSS/about.css">
-     <link rel="icon" type="image/png" class="headerimg1" href="/images/HydroOS.png">
+    <link rel="stylesheet" href="../CSS/about.css">
+     <link rel="icon" type="image/png" class="headerimg1" href="../images/HydroOS.png">
     <style>
         .login-box { max-width: 400px; margin: 100px auto; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); text-align: center; }
         input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
@@ -19,7 +19,7 @@
         <input type="password" id="adminPass" placeholder="Password...">
         <button onclick="checkAdmin()">ግባ</button>
     </div>
-<script src="/socket.io/socket.io.js"></script>
+<script src="../socket.io/socket.io.js"></script>
    <script>
     async function checkAdmin() {
         const passwordInput = document.getElementById('adminPass');
