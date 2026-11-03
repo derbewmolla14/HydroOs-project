@@ -1,0 +1,69 @@
+import { useEffect, useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, Droplets, Eye, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../api';
+import { useAuth } from '../auth/AuthContext';
+import { AdminLayout } from '../layouts/AdminLayout';
+
+const emptyForm = { organizationId: '', name: '', code: '', tankType: 'ground', capacity: '', location: '', latitude: '', longitude: '', installationDate: '', assignedOperatorId: '', status: 'active', description: '', currentWaterLevel: 0, minimumWaterLevel: 0, maximumWaterLevel: '' };
+const tankTypes = ['ground', 'overhead', 'underground', 'reservoir', 'other'];
+const managerRoles = ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'];
+
+export function TankManagementPage() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const canManage = managerRoles.includes(user?.role) && (user?.role !== 'SUB_ADMIN' || (user.permissions || []).some((permission) => ['tanks:manage', 'manage_tanks', 'tanks'].includes(permission)));
+    const [state, setState] = useState({ tanks: [], pagination: { page: 1, pages: 1, total: 0 }, loading: true, error: '' });
+    const [query, setQuery] = useState({ search: '', status: '', tankType: '', page: 1 });
+    const [operators, setOperators] = useState([]);
+    const [organizations, setOrganizations] = useState([]);
+    const [form, setForm] = useState(null);
+    const [formError, setFormError] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    async function loadTanks() {
+        setState((current) => ({ ...current, loading: true, error: '' }));
+        try {
+            const { data } = await api.get('/tanks', { params: { ...query, limit: 10 } });
+            setState({ tanks: data.tanks, pagination: data.pagination, loading: false, error: '' });
+        } catch (error) { setState((current) => ({ ...current, loading: false, error: error.response?.data?.message || 'Tanks could not be loaded.' })); }
+    }
+    useEffect(() => { loadTanks(); }, [query.search, query.status, query.tankType, query.page]);
+    useEffect(() => { if (canManage) api.get('/tanks/operators').then(({ data }) => setOperators(data.operators)).catch(() => setOperators([])); if (user?.role === 'SUPER_ADMIN') api.get('/dashboard/overview').then(({ data }) => setOrganizations(data.organizations)).catch(() => setOrganizations([])); }, [canManage, user?.role]);
+
+    const summary = useMemo(() => ({ active: state.tanks.filter((tank) => tank.status === 'active').length, capacity: state.tanks.reduce((total, tank) => total + (tank.capacity || 0), 0) }), [state.tanks]);
+    function updateQuery(key, value) { setQuery((current) => ({ ...current, [key]: value, ...(key !== 'page' ? { page: 1 } : {}) })); }
+    function openForm(tank = null) { setForm(tank ? { ...emptyForm, ...tank, installationDate: tank.installationDate?.slice(0, 10) || '', assignedOperatorId: tank.assignedOperatorId?._id || tank.assignedOperatorId || '' } : { ...emptyForm }); setFormError(''); }
+    function updateForm(event) { setForm((current) => ({ ...current, [event.target.name]: event.target.value })); }
+    async function saveTank(event) {
+        event.preventDefault(); setSaving(true); setFormError('');
+        try {
+            const payload = { ...form, capacity: Number(form.capacity), currentWaterLevel: Number(form.currentWaterLevel || 0), minimumWaterLevel: Number(form.minimumWaterLevel || 0), maximumWaterLevel: Number(form.maximumWaterLevel || form.capacity), latitude: form.latitude === '' ? null : Number(form.latitude), longitude: form.longitude === '' ? null : Number(form.longitude), assignedOperatorId: form.assignedOperatorId || null };
+            if (user.role === 'SUPER_ADMIN' && !form._id) payload.organizationId = form.organizationId;
+            if (form._id) await api.patch(`/tanks/${form._id}`, payload); else await api.post('/tanks', payload);
+            setForm(null); await loadTanks();
+        } catch (error) { setFormError(error.response?.data?.message || 'Tank could not be saved.'); } finally { setSaving(false); }
+    }
+    async function deactivate(tank) {
+        if (!window.confirm(`Deactivate ${tank.name}? This preserves its history.`)) return;
+        try { await api.delete(`/tanks/${tank._id}`); await loadTanks(); } catch (error) { setState((current) => ({ ...current, error: error.response?.data?.message || 'Tank could not be deactivated.' })); }
+    }
+
+    return <AdminLayout title="Water Tanks"><section className="module-page tank-page">
+        <div className="module-header"><div><p className="dashboard-kicker">HydroOS infrastructure</p><h1>Water tank management</h1><p>Register, monitor and maintain tanks within your authorized scope.</p></div>{canManage && <button className="module-action-button" onClick={() => openForm()}><Plus size={17} /> Register tank</button>}</div>
+        <div className="tank-stat-grid"><div><span>Total records</span><strong>{state.pagination.total}</strong><small>Authorized tanks</small></div><div><span>Active on this page</span><strong>{summary.active}</strong><small>Operational tanks</small></div><div><span>Listed capacity</span><strong>{summary.capacity.toLocaleString()} L</strong><small>Current page</small></div></div>
+        <div className="tank-toolbar"><label className="tank-search"><Search size={17} /><input value={query.search} onChange={(event) => updateQuery('search', event.target.value)} placeholder="Search name, ID or location" /></label><select value={query.status} onChange={(event) => updateQuery('status', event.target.value)}><option value="">All statuses</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="deactivated">Deactivated</option></select><select value={query.tankType} onChange={(event) => updateQuery('tankType', event.target.value)}><option value="">All types</option>{tankTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select></div>
+        {state.error && <p className="form-message error">{state.error}</p>}{state.loading ? <div className="module-empty">Loading verified tank records…</div> : <div className="tank-table-wrap"><table className="tank-management-table"><thead><tr><th>Tank</th><th>Type</th><th>Capacity</th><th>Water level</th><th>Status</th><th>Actions</th></tr></thead><tbody>{state.tanks.map((tank) => <tr key={tank._id}><td><strong>{tank.name}</strong><small>{tank.code}</small></td><td>{tank.tankType}</td><td>{tank.capacity.toLocaleString()} L</td><td><div className="level-cell"><div><span style={{ width: `${Math.min(tank.waterLevelPercentage, 100)}%` }} /></div><small>{tank.waterLevelPercentage}% · {tank.remainingWaterVolume.toLocaleString()} L</small></div></td><td><span className={`status-pill ${tank.status}`}>{tank.status}</span></td><td><div className="table-actions"><button title="View details" onClick={() => navigate(`/tanks/${tank._id}`)}><Eye size={16} /></button>{canManage && <><button title="Edit tank" onClick={() => openForm(tank)}><Pencil size={16} /></button>{tank.status !== 'deactivated' && <button title="Deactivate tank" onClick={() => deactivate(tank)}><Trash2 size={16} /></button>}</>}</div></td></tr>)}</tbody></table>{!state.tanks.length && <div className="module-empty">No tanks match the selected filters.</div>}</div>}
+        <div className="tank-pagination"><span>{state.pagination.total} records</span><div><button disabled={query.page <= 1} onClick={() => updateQuery('page', query.page - 1)}><ChevronLeft size={16} /></button><span>Page {query.page} of {Math.max(state.pagination.pages, 1)}</span><button disabled={query.page >= state.pagination.pages} onClick={() => updateQuery('page', query.page + 1)}><ChevronRight size={16} /></button></div></div>
+        {form && <div className="modal-backdrop" role="presentation"><div className="tank-modal" role="dialog" aria-modal="true"><div className="modal-heading"><div><p className="dashboard-kicker">Tank registry</p><h2>{form._id ? 'Edit tank' : 'Register tank'}</h2></div><button onClick={() => setForm(null)} aria-label="Close">×</button></div><form className="tank-form" onSubmit={saveTank}><div className="form-grid">{user.role === 'SUPER_ADMIN' && !form._id && <label>Organization<select required name="organizationId" value={form.organizationId} onChange={updateForm}><option value="">Select organization</option>{organizations.map((organization) => <option key={organization._id} value={organization._id}>{organization.name} ({organization.code})</option>)}</select></label>}<label>Tank name<input required name="name" value={form.name} onChange={updateForm} /></label><label>Identification number<input required name="code" value={form.code} onChange={updateForm} /></label><label>Tank type<select name="tankType" value={form.tankType} onChange={updateForm}>{tankTypes.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label>Capacity (liters)<input required min="1" type="number" name="capacity" value={form.capacity} onChange={updateForm} /></label><label>Location<input name="location" value={form.location} onChange={updateForm} /></label><label>Installation date<input type="date" name="installationDate" value={form.installationDate} onChange={updateForm} /></label><label>Latitude<input type="number" step="any" min="-90" max="90" name="latitude" value={form.latitude} onChange={updateForm} /></label><label>Longitude<input type="number" step="any" min="-180" max="180" name="longitude" value={form.longitude} onChange={updateForm} /></label><label>Assigned operator<select name="assignedOperatorId" value={form.assignedOperatorId} onChange={updateForm}><option value="">Unassigned</option>{operators.map((operator) => <option key={operator._id} value={operator._id}>{operator.firstname} {operator.lastname} ({operator.email})</option>)}</select></label><label>Status<select name="status" value={form.status} onChange={updateForm}><option value="active">Active</option><option value="suspended">Suspended</option><option value="deactivated">Deactivated</option></select></label><label>Current water level (L)<input min="0" type="number" name="currentWaterLevel" value={form.currentWaterLevel} onChange={updateForm} /></label><label>Minimum water level (L)<input min="0" type="number" name="minimumWaterLevel" value={form.minimumWaterLevel} onChange={updateForm} /></label><label>Maximum water level (L)<input min="0" type="number" name="maximumWaterLevel" value={form.maximumWaterLevel} onChange={updateForm} /></label></div><label>Description<textarea name="description" rows="3" value={form.description} onChange={updateForm} /></label>{formError && <p className="form-message error">{formError}</p>}<div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setForm(null)}>Cancel</button><button className="module-action-button" disabled={saving}>{saving ? 'Saving…' : 'Save tank'}</button></div></form></div></div>}
+    </section></AdminLayout>;
+}
+
+export function TankDetailsPage() {
+    const { user } = useAuth();
+    const [state, setState] = useState({ tank: null, loading: true, error: '' });
+    const id = window.location.pathname.split('/').pop();
+    useEffect(() => { api.get(`/tanks/${id}`).then(({ data }) => setState({ tank: data.tank, loading: false, error: '' })).catch((error) => setState({ tank: null, loading: false, error: error.response?.data?.message || 'Tank could not be loaded.' })); }, [id]);
+    const tank = state.tank;
+    return <AdminLayout title="Tank details"><section className="module-page tank-page"><button className="back-link" onClick={() => window.history.back()}>← Back to tanks</button>{state.loading && <div className="module-empty">Loading tank details…</div>}{state.error && <p className="form-message error">{state.error}</p>}{tank && <><div className="module-header"><div><p className="dashboard-kicker"><Droplets size={15} /> Tank registry</p><h1>{tank.name}</h1><p>{tank.code} · {tank.location || 'Location not specified'}</p></div><span className={`status-pill ${tank.status}`}>{tank.status}</span></div><div className="tank-detail-grid"><div className="water-level-card"><div className="water-level-visual"><div style={{ height: `${Math.min(tank.waterLevelPercentage, 100)}%` }} /></div><div><span>Current water level</span><strong>{tank.remainingWaterVolume.toLocaleString()} L</strong><small>{tank.waterLevelPercentage}% of {tank.maximumWaterLevel?.toLocaleString() || tank.capacity.toLocaleString()} L maximum</small></div></div><div className="detail-card"><h3>Tank information</h3><dl><dt>Tank type</dt><dd>{tank.tankType}</dd><dt>Capacity</dt><dd>{tank.capacity.toLocaleString()} L</dd><dt>Minimum level</dt><dd>{tank.minimumWaterLevel.toLocaleString()} L</dd><dt>Installation date</dt><dd>{tank.installationDate ? new Date(tank.installationDate).toLocaleDateString() : 'Not specified'}</dd><dt>Assigned operator</dt><dd>{tank.assignedOperatorId ? `${tank.assignedOperatorId.firstname} ${tank.assignedOperatorId.lastname}` : 'Unassigned'}</dd><dt>Coordinates</dt><dd>{tank.latitude ?? '—'}, {tank.longitude ?? '—'}</dd></dl></div></div><div className="detail-card"><h3>Description</h3><p>{tank.description || 'No description provided.'}</p><small>Last measured: {tank.lastMeasuredAt ? new Date(tank.lastMeasuredAt).toLocaleString() : 'Not recorded'}</small></div></>}</section></AdminLayout>;
+}

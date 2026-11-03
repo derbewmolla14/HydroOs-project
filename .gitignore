@@ -1,4 +1,13 @@
 node_modules/
+**/node_modules/
+**/dist/
+
+# Environment files and secrets
 .env
-# .gitignore መኖሩን አረጋግጥ
-echo "node_modules/" > .gitignore
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+users.xlsx
