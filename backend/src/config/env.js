@@ -14,7 +14,8 @@ const required = (name) => {
 const parseOrigins = () => [...new Set((process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN || 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim())
-    .filter(Boolean))];
+    .filter(Boolean)
+    .concat(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:5173', 'http://127.0.0.1:5173']))];
 
 const parseTtl = (name, fallback) => {
     const value = process.env[name]?.trim() || fallback;

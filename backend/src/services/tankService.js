@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { Tank } from '../models/Tank.js';
 import { User } from '../models/User.js';
 
-export const tankFields = ['name', 'code', 'tankType', 'capacity', 'location', 'latitude', 'longitude', 'installationDate', 'assignedOperatorId', 'assignedUserIds', 'status', 'description', 'currentWaterLevel', 'minimumWaterLevel', 'maximumWaterLevel', 'lastMeasuredAt'];
+export const tankFields = ['name', 'code', 'shape', 'dimensions', 'tankType', 'capacity', 'location', 'latitude', 'longitude', 'installationDate', 'assignedOperatorId', 'assignedUserIds', 'status', 'description', 'currentWaterLevel', 'minimumWaterLevel', 'maximumWaterLevel', 'lastMeasuredAt'];
 export const managerRoles = ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'];
 
 export function canManageTanks(user) {
@@ -26,6 +26,11 @@ export async function assertTankInput(input, { organizationId, tankId } = {}) {
     if (values.code) values.code = String(values.code).trim().toUpperCase();
     if (values.name !== undefined) values.name = String(values.name).trim();
     if (values.capacity !== undefined) values.capacity = Number(values.capacity);
+    if (values.dimensions !== undefined) {
+        if (!values.dimensions || typeof values.dimensions !== 'object' || Array.isArray(values.dimensions)) throw Object.assign(new Error('Tank dimensions are invalid.'), { statusCode: 400 });
+        values.dimensions = Object.fromEntries(['diameter', 'length', 'width', 'height'].map((field) => [field, values.dimensions[field] === '' || values.dimensions[field] === undefined ? null : Number(values.dimensions[field])]));
+        if (Object.values(values.dimensions).some((value) => value !== null && (!Number.isFinite(value) || value <= 0))) throw Object.assign(new Error('Tank dimensions must be positive numbers.'), { statusCode: 400 });
+    }
     for (const field of ['latitude', 'longitude', 'currentWaterLevel', 'minimumWaterLevel', 'maximumWaterLevel']) {
         if (values[field] !== undefined && values[field] !== null && values[field] !== '') values[field] = Number(values[field]);
     }

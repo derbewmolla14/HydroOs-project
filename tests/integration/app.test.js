@@ -47,6 +47,22 @@ test('handles localhost CORS preflight without redirecting', async () => {
         redirect: 'manual'
     });
 
+    test('allows credentialed requests from the local loopback origin', async () => {
+        const app = createApp({ emit() {} });
+        const server = app.listen(0);
+
+        await new Promise((resolve) => server.once('listening', resolve));
+        const address = server.address();
+        const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/auth/me`, {
+            headers: { Origin: 'http://127.0.0.1:5173' }
+        });
+
+        assert.equal(response.status, 401);
+        assert.equal(response.headers.get('access-control-allow-origin'), 'http://127.0.0.1:5173');
+        assert.equal(response.headers.get('access-control-allow-credentials'), 'true');
+        await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    });
+
     assert.equal(response.status, 204);
     assert.equal(response.headers.get('access-control-allow-origin'), 'http://localhost:5173');
     assert.equal(response.headers.get('access-control-allow-credentials'), 'true');

@@ -4,6 +4,13 @@ const tankSchema = new mongoose.Schema({
     organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     name: { type: String, required: true },
     code: { type: String, required: true, trim: true, uppercase: true },
+    shape: { type: String, enum: ['cylindrical', 'rectangular', 'spherical', 'custom'], default: 'cylindrical' },
+    dimensions: {
+        diameter: { type: Number, min: 0, default: null },
+        length: { type: Number, min: 0, default: null },
+        width: { type: Number, min: 0, default: null },
+        height: { type: Number, min: 0, default: null }
+    },
     tankType: { type: String, enum: ['ground', 'overhead', 'underground', 'reservoir', 'other'], default: 'other' },
     capacity: { type: Number, required: true, min: 1 },
     location: { type: String, trim: true, default: '' },

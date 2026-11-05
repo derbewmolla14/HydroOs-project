@@ -11,7 +11,7 @@
     "web:dev": "npm --prefix frontend run dev",
     "web:build": "npm --prefix frontend run build",
     "bootstrap:super-admin": "node scripts/bootstrap-super-admin.js",
-    "test": "node --test tests/integration/app.test.js tests/integration/auth.test.js tests/integration/tank.test.js tests/integration/device.test.js tests/integration/alert.test.js",
+    "test": "node --test tests/integration/app.test.js tests/integration/auth.test.js tests/integration/tank.test.js tests/integration/device.test.js tests/integration/alert.test.js tests/integration/export.test.js",
     "lint": "node --check backend/src/app.js && node --check backend/src/routes/dashboardRoutes.js && node --check backend/src/legacy/legacyRoutes.js"
   },
   "keywords": [],
@@ -23,6 +23,7 @@
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "docx": "^9.15.2",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",

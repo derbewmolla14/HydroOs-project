@@ -16,6 +16,7 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { AlertConfigurationPage } from './pages/AlertConfigurationPage';
 import { UserManagementPage } from './pages/UserManagementPage';
 import { PasswordChangePage } from './pages/PasswordChangePage';
+import { ReportsPage } from './pages/ReportsPage';
 
 const adminRoles = ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN', 'OPERATOR'];
 const adminPaths = ['/organizations', '/users', '/tanks', '/irrigation', '/soil-moisture', '/water-sources', '/devices', '/schedule', '/reports', '/audit-logs', '/settings'];
@@ -28,7 +29,7 @@ export function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/accept-invitation" element={<InvitationPage />} />
         <Route path="/invite" element={<Navigate to="/accept-invitation" replace />} />
-        <Route element={<ProtectedRoute roles={adminRoles} />}><Route path="/dashboard" element={<DashboardPage />} /><Route path="/change-password" element={<PasswordChangePage />} /><Route path="/alerts" element={<AlertsPage />} /><Route path="/notifications" element={<NotificationsPage />} /><Route path="/alert-settings" element={<AlertConfigurationPage />} /><Route path="/users" element={<UserManagementPage />} /><Route path="/tanks" element={<TankManagementPage />} /><Route path="/tanks/:tankId" element={<TankDetailsPage />} /><Route path="/devices" element={<DeviceManagementPage />} />{adminPaths.filter((path) => !['/users', '/tanks', '/devices'].includes(path)).map((path) => <Route key={path} path={path} element={<AdminModulePage />} />)}</Route>
+        <Route element={<ProtectedRoute roles={adminRoles} />}><Route path="/dashboard" element={<DashboardPage />} /><Route path="/change-password" element={<PasswordChangePage />} /><Route path="/alerts" element={<AlertsPage />} /><Route path="/notifications" element={<NotificationsPage />} /><Route path="/alert-settings" element={<AlertConfigurationPage />} /><Route path="/users" element={<UserManagementPage />} /><Route path="/tanks" element={<TankManagementPage />} /><Route path="/tanks/:tankId" element={<TankDetailsPage />} /><Route path="/devices" element={<DeviceManagementPage />} /><Route path="/reports" element={<ReportsPage />} />{adminPaths.filter((path) => !['/users', '/tanks', '/devices', '/reports'].includes(path)).map((path) => <Route key={path} path={path} element={<AdminModulePage />} />)}</Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes></AuthProvider></LanguageProvider>;
 }

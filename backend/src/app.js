@@ -16,6 +16,7 @@ import { monitoringRoutes } from './routes/monitoringRoutes.js';
 import { alertRoutes } from './routes/alertRoutes.js';
 import { notificationRoutes } from './routes/notificationRoutes.js';
 import { userRoutes } from './routes/userRoutes.js';
+import { exportRoutes } from './routes/exportRoutes.js';
 
 const currentFile = fileURLToPath(import.meta.url);
 const srcDirectory = path.dirname(currentFile);
@@ -56,6 +57,7 @@ export function createApp(io) {
     apiV1.use('/monitoring', monitoringRoutes);
     apiV1.use('/alerts', alertRoutes);
     apiV1.use('/notifications', notificationRoutes);
+    apiV1.use('/exports', exportRoutes);
     app.use('/api/v1', apiV1);
 
     registerLegacyRoutes(app, io, projectRoot);
