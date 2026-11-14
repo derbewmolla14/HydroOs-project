@@ -29,6 +29,10 @@
     color: inherit;
     text-decoration: none;
   }
+
+#contact {
+  scroll-margin-top: 90px;
+}
   button,
   input,
   select {

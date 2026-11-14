@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+// import ContactSection from "../ContactSection.jsx";
 import {
   BriefcaseBusiness,
   Camera,
@@ -8,6 +9,7 @@ import {
   MapPin,
   Moon,
   Phone,
+  // MessageCircle,
   Send,
   ShieldCheck,
   Sun,
@@ -77,12 +79,12 @@ export function AppNav() {
 const socialLinks = [
   {
     label: "LinkedIn (placeholder)",
-    href: "https://www.linkedin.com/",
+    href: "https://www.linkedin.com/in/molla-hydro-os-dev",
     icon: BriefcaseBusiness,
   },
   {
     label: "Facebook (placeholder)",
-    href: "https://www.facebook.com/",
+    href: "https://www.facebook.com/share/1CBQtivcSX/",
     icon: Users,
   },
   {
@@ -90,7 +92,11 @@ const socialLinks = [
     href: "https://www.instagram.com/",
     icon: Camera,
   },
-  { label: "Telegram (placeholder)", href: "https://t.me/", icon: Send },
+  {
+    label: "Telegram (placeholder)",
+    href: "https://t.me/HorizonHydroOSTech1",
+    icon: Send,
+  },
 ];
 
 export function PublicFooter() {
@@ -122,13 +128,12 @@ export function PublicFooter() {
             ))}
           </div>
         </section>
-        <section className="footer-section">
+        <section className="footer-section" id="contact">
           <h2>Quick links</h2>
           <nav aria-label="Footer navigation">
             <a href="/login">Home</a>
             <a href="#about">About Us</a>
             <a href="#features">Features</a>
-            <a href="#contact">Contact</a>
             <Link to="/login">Admin</Link>
           </nav>
         </section>
@@ -136,16 +141,32 @@ export function PublicFooter() {
           <h2>Contact</h2>
           <div className="footer-contact">
             <span>
-              <Mail size={15} /> Email: to be provided
+              <Mail size={15} /> Email: derbewmolla14@gmail.com
             </span>
             <span>
-              <Phone size={15} /> Phone: to be provided
+              <Phone size={15} /> Phone: +251937100547
             </span>
-            <span>
-              <MapPin size={15} /> Location: to be provided
-            </span>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Kombolcha%2C+Ethiopia"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-blue-500 transition-colors"
+            >
+              <MapPin size={15} />
+              Location: Kombolcha, Ethiopia
+            </a>
           </div>
-          <a className="footer-contact-link" href="#contact">
+          <a
+            href="#contact"
+            onClick={(e) => {
+              e.preventDefault();
+
+              document.getElementById("contact")?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }}
+          >
             Contact Us <span aria-hidden="true">→</span>
           </a>
         </section>
