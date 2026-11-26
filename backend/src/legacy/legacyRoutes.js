@@ -27,36 +27,9 @@ function createUploadMiddleware() {
 export function registerLegacyRoutes(app, io, projectRoot) {
     const upload = createUploadMiddleware();
 
-    app.post('/api/register', async (req, res, next) => {
-        try {
-            const user = await User.create({ ...req.body, passwordHash: await hashPassword(req.body.password || ''), password: undefined });
-            res.status(201).json({ success: true, message: 'Registered!', user: { id: user.id, email: user.email } });
-        } catch (error) {
-            next(Object.assign(error, { statusCode: 400 }));
-        }
-    });
+    app.post('/api/register', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/register.' }));;
 
-    app.post('/api/login', async (req, res, next) => {
-        try {
-            const { email, password } = req.body;
-            const user = await User.findOne({ email: email?.toLowerCase() }).select('+passwordHash +password');
-            if (!user) {
-                return res.status(401).json({ success: false, message: 'Invalid login!' });
-            }
-            const valid = user.passwordHash ? await verifyPassword(password || '', user.passwordHash) : user.password === password;
-            if (!valid) return res.status(401).json({ success: false, message: 'Invalid login!' });
-            if (!user.passwordHash) {
-                user.passwordHash = await hashPassword(password);
-                user.password = undefined;
-                await user.save();
-            }
-            const userResponse = user.toObject();
-            delete userResponse.password;
-            res.json({ success: true, user: userResponse });
-        } catch (error) {
-            next(error);
-        }
-    });
+    app.post('/api/login', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/login.' }));;
 
     app.post('/api/reset-password', async (req, res, next) => {
         try {
@@ -93,15 +66,7 @@ export function registerLegacyRoutes(app, io, projectRoot) {
         });
     });
 
-    app.post('/admin/login', (req, res) => {
-        if (!env.adminPassword) {
-            return res.status(503).json({ success: false, message: 'Admin login is not configured.' });
-        }
-        if (req.body.password === env.adminPassword) {
-            return res.json({ success: true });
-        }
-        res.status(401).json({ success: false });
-    });
+    app.post('/admin/login', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/login.' }));;
 
     app.post('/admin/approve-payment', async (req, res, next) => {
         try {
