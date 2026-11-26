@@ -125,6 +125,12 @@ router.patch('/admin/devices/:id', manager, async (req, res, next) => {
         const service = await ServiceDevice.findById(req.params.id);
         if (!service) return res.status(404).json({ success: false, message: 'Service record not found.' });
         if (typeof req.body.isActive === 'boolean') {
+            if (req.body.isActive && service.assignedToUser) {
+                const assignedUser = await User.findById(service.assignedToUser);
+                if (assignedUser?.subscriptionPlan !== 'all' && (assignedUser?.allowedServices || []).some((item) => item !== service.serviceType)) {
+                    return res.status(409).json({ success: false, message: 'This user already has another service on the Individual plan.' });
+                }
+            }
             service.isActive = req.body.isActive;
             if (service.assignedToUser) {
                 if (service.isActive) await User.updateOne({ _id: service.assignedToUser }, { $addToSet: { allowedServices: service.serviceType } });
