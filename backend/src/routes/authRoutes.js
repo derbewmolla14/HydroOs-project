@@ -26,7 +26,13 @@ const publicUser = (user) => {
         role: systemRole === 'OPERATOR' ? 'user' : 'admin',
         systemRole,
         organizationId: user.organizationId?.toString() || null,
-        permissions: user.permissions || []
+        permissions: user.permissions || [],
+        subscriptionStatus: user.subscriptionStatus || 'inactive',
+        subscriptionPlan: user.subscriptionPlan || 'individual',
+        monthlyFeePaid: user.monthlyFeePaid === true,
+        monthlyFeePaidAt: user.monthlyFeePaidAt || null,
+        subscriptionExpiresAt: user.subscriptionExpiresAt || null,
+        allowedServices: user.allowedServices || []
     };
 };
 
