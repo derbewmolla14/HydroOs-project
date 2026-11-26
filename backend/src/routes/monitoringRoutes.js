@@ -34,6 +34,21 @@ function applyServiceReadingScope(filter, services) {
     filter.$and = [...(filter.$and || []), clauses.length ? { $or: clauses } : { _id: { $exists: false } }];
     return filter;
 }
+
+function deviceServiceFilter(organizationFilter, services, tankIds) {
+    const filter = { ...organizationFilter };
+    if (!services) return filter;
+    const serviceClauses = [{ serviceType: { $in: services } }];
+    // Older HydroOS sensor records predate serviceType and are treated as tank devices.
+    if (services.includes('water_tank')) serviceClauses.push({ serviceType: { $exists: false } });
+    filter.$and = [{ $or: serviceClauses }];
+    if (tankIds) filter.$and.push({ $or: [
+        { serviceType: { $ne: 'water_tank' } },
+        { serviceType: { $exists: false }, tankId: { $in: tankIds } },
+        { tankId: { $in: tankIds } }
+    ] });
+    return filter;
+}
 router.use(authenticate);
 
 async function scopedTankIds(req, filter) {
@@ -73,11 +88,7 @@ router.get('/overview', async (req, res, next) => {
         if (tankIds) filter._id = { $in: tankIds };
         const tanks = services && !services.includes('water_tank') ? [] : await Tank.find(filter).select('name code capacity status currentWaterLevel lastMeasuredAt assignedOperatorId').lean({ virtuals: true });
         const organizationFilter = monitoringFilter(req.user, req.query.organizationId);
-        const deviceFilter = {
-            ...organizationFilter,
-            ...(services ? { serviceType: { $in: services } } : {}),
-            ...(tankIds ? { $or: [{ serviceType: { $ne: 'water_tank' } }, { tankId: { $in: tankIds } }] } : {})
-        };
+        const deviceFilter = deviceServiceFilter(organizationFilter, services, tankIds);
         const devices = services && services.length === 0 ? [] : await Device.find(deviceFilter).select('name identifier status serviceType tankId heartbeatIntervalSeconds lastSeenAt lastHeartbeatAt').populate('tankId', 'name code capacity currentWaterLevel').lean({ virtuals: true });
         const now = Date.now();
         const online = devices.filter((device) => device.status === 'active' && device.lastSeenAt && now - new Date(device.lastSeenAt).getTime() <= device.heartbeatIntervalSeconds * 2000).length;
@@ -104,12 +115,7 @@ router.get('/history', async (req, res, next) => {
         const tankIds = await scopedTankIds(req, filter);
         const readingFilter = applyServiceReadingScope({ ...filter }, services);
         if (services) {
-            const serviceDeviceFilter = {
-                ...filter,
-                serviceType: { $in: services },
-                ...(tankIds ? { $or: [{ serviceType: { $ne: 'water_tank' } }, { tankId: { $in: tankIds } }] } : {})
-            };
-            const allowedDeviceIds = await Device.find(serviceDeviceFilter).distinct('_id');
+            const allowedDeviceIds = await Device.find(deviceServiceFilter(filter, services, tankIds)).distinct('_id');
             readingFilter.deviceId = { $in: allowedDeviceIds };
         }
         if (req.query.tankId) {
