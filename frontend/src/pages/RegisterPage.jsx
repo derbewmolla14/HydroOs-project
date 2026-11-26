@@ -4,6 +4,12 @@ import { useAuth } from "../auth/AuthContext";
 import { AuthCard, AuthShell } from "../components/AuthLayout";
 import { useLanguage } from "../i18n/LanguageContext";
 
+const adminRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
+
+function dashboardForRole(role) {
+  return adminRoles.includes(role) ? "/dashboard" : "/home";
+}
+
 export function RegisterPage() {
   const { t } = useLanguage();
   const { register } = useAuth();
@@ -15,6 +21,7 @@ export function RegisterPage() {
     password: "",
     role: "user",
     inviteCode: "",
+    organizationName: "",
   });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,14 +38,13 @@ export function RegisterPage() {
     if (form.password.length < 8) return setError(t.passwordLength);
     if (form.role === "admin" && !form.inviteCode.trim())
       return setError("Admin Invite Code is required for admin registration.");
+    if (form.role === "admin" && !form.organizationName.trim())
+      return setError("Organization name is required for admin registration.");
 
     setBusy(true);
     try {
       const registeredUser = await register(form);
-      const destination = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"].includes(registeredUser.role)
-        ? "/dashboard"
-        : "/dashboard";
-      navigate(destination, { replace: true, state: { registered: true } });
+      navigate(dashboardForRole(registeredUser.role), { replace: true });
     } catch (requestError) {
       setError(requestError.response?.data?.message || t.genericError);
     } finally {
@@ -107,17 +113,28 @@ export function RegisterPage() {
             </select>
           </label>
           {form.role === "admin" && (
-            <label>
-              Admin Invite Code
-              <input
-                type="password"
-                required
-                autoComplete="off"
-                value={form.inviteCode}
-                onChange={(event) => update("inviteCode", event.target.value)}
-                placeholder="Enter your administrator invite code"
-              />
-            </label>
+            <>
+              <label>
+                Organization name
+                <input
+                  required
+                  value={form.organizationName}
+                  onChange={(event) => update("organizationName", event.target.value)}
+                  placeholder="Enter your organization name"
+                />
+              </label>
+              <label>
+                Admin Invite Code
+                <input
+                  type="password"
+                  required
+                  autoComplete="off"
+                  value={form.inviteCode}
+                  onChange={(event) => update("inviteCode", event.target.value)}
+                  placeholder="Enter your administrator invite code"
+                />
+              </label>
+            </>
           )}
           <p className="helper-text">
             Admin registration requires an invite code issued by a HydroOS administrator.
