@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, requireServiceAccess } from '../middleware/auth.js';
 import { authenticateDevice } from '../middleware/deviceAuth.js';
 import { Device } from '../models/Device.js';
 import { DeviceReading } from '../models/DeviceReading.js';
@@ -45,6 +45,7 @@ router.post('/ingest/readings', authenticateDevice, async (req, res, next) => {
 });
 
 router.use(authenticate);
+router.use(requireServiceAccess('water_tank'));
 
 router.get('/', async (req, res, next) => {
     try {
