@@ -63,6 +63,9 @@ router.post('/link', requireRoles('OPERATOR'), async (req, res, next) => {
 
         const currentAllowed = user.allowedServices || [];
         const alreadyAllowed = currentAllowed.includes(service.serviceType);
+        if (user.subscriptionPlan === 'all' && !alreadyAllowed) {
+            return res.status(403).json({ success: false, code: 'SERVICE_NOT_GRANTED', message: 'This module has not been granted to your account. Contact the administrator.' });
+        }
         if (user.subscriptionPlan !== 'all' && currentAllowed.length > 0 && !alreadyAllowed) {
             return res.status(403).json({ success: false, code: 'INDIVIDUAL_PLAN_LIMIT', message: 'Your Individual plan allows one service only. Upgrade to the All Services plan to link more.' });
         }
@@ -87,9 +90,11 @@ router.post('/link', requireRoles('OPERATOR'), async (req, res, next) => {
             userFilter.subscriptionPlan = 'individual';
             userFilter.$and.push({ $or: [{ allowedServices: { $size: 0 } }, { allowedServices: service.serviceType }] });
         }
-        const userUpdate = user.subscriptionPlan === 'all' && currentAllowed.length === 0
-            ? await User.findOneAndUpdate(userFilter, { $set: { allowedServices: [...SERVICE_TYPES] } }, { new: true })
-            : await User.findOneAndUpdate(userFilter, { $addToSet: { allowedServices: service.serviceType } }, { new: true });
+        const userUpdate = await User.findOneAndUpdate(
+            userFilter,
+            { $addToSet: { allowedServices: service.serviceType } },
+            { new: true }
+        );
         if (!userUpdate) {
             if (!wasAlreadyAssigned) await ServiceDevice.updateOne({ _id: claimedService._id, assignedToUser: user._id }, { $set: { assignedToUser: null, linkedAt: null } });
             return res.status(403).json({ success: false, code: 'SUBSCRIPTION_CHANGED', message: 'Your subscription or service permissions changed. Refresh the page and contact the administrator if the problem continues.' });
@@ -131,10 +136,7 @@ router.post('/admin/devices', manager, async (req, res, next) => {
             assignedToUser: assignedUser?._id || null, createdBy: req.user.id,
             linkedAt: assignedUser ? new Date() : null
         });
-        if (assignedUser && assignedUser.subscriptionPlan === 'all' && assignedUser.allowedServices.length === 0) {
-            assignedUser.allowedServices = [...SERVICE_TYPES];
-            await assignedUser.save();
-        } else if (assignedUser && !assignedUser.allowedServices.includes(serviceType)) {
+        if (assignedUser && !assignedUser.allowedServices.includes(serviceType)) {
             assignedUser.allowedServices.push(serviceType);
             await assignedUser.save();
         }
@@ -181,10 +183,7 @@ router.patch('/admin/devices/:id', manager, async (req, res, next) => {
                 const remaining = await ServiceDevice.exists({ assignedToUser: oldUserId, serviceType: service.serviceType, isActive: true });
                 if (!remaining) await User.updateOne({ _id: oldUserId }, { $pull: { allowedServices: service.serviceType } });
             }
-            if (nextUser && service.isActive) {
-                if (nextUser.subscriptionPlan === 'all' && !(nextUser.allowedServices || []).length) await User.updateOne({ _id: nextUser._id }, { $set: { allowedServices: [...SERVICE_TYPES] } });
-                else await User.updateOne({ _id: nextUser._id }, { $addToSet: { allowedServices: service.serviceType } });
-            }
+            if (nextUser && service.isActive) await User.updateOne({ _id: nextUser._id }, { $addToSet: { allowedServices: service.serviceType } });
         } else {
             await service.save();
         }
