@@ -204,10 +204,12 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
         if (subscriptionPlan !== undefined && !['individual', 'all'].includes(subscriptionPlan)) return res.status(400).json({ success: false, message: 'Invalid subscription plan.' });
         if (monthlyFeePaid !== undefined && typeof monthlyFeePaid !== 'boolean') return res.status(400).json({ success: false, message: 'monthlyFeePaid must be true or false.' });
         if (allowedServices !== undefined && (!Array.isArray(allowedServices) || allowedServices.some((item) => !SERVICE_TYPES.includes(item)))) return res.status(400).json({ success: false, message: 'Invalid allowed services list.' });
-        if (subscriptionPlan === 'individual' && (allowedServices || user.allowedServices).length > 1) return res.status(409).json({ success: false, message: 'The Individual plan can include only one service.' });
+        const targetPlan = subscriptionPlan || user.subscriptionPlan;
+        const targetAllowedServices = allowedServices || user.allowedServices || [];
+        if (targetPlan === 'individual' && targetAllowedServices.length > 1) return res.status(409).json({ success: false, message: 'The Individual plan can include only one service.' });
         if (subscriptionStatus !== undefined) user.subscriptionStatus = subscriptionStatus;
         if (subscriptionPlan !== undefined) user.subscriptionPlan = subscriptionPlan;
-        if (monthlyFeePaid !== undefined) {
+        if (monthlyFeePaid !== undefined && monthlyFeePaid !== user.monthlyFeePaid) {
             user.monthlyFeePaid = monthlyFeePaid;
             user.monthlyFeePaidAt = monthlyFeePaid ? new Date() : null;
         }
@@ -228,6 +230,10 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
             user.allowedServices = nextAllowed;
         }
         if (user.subscriptionPlan === 'all') user.allowedServices = [...SERVICE_TYPES];
+        if (user.monthlyFeePaid && !user.subscriptionExpiresAt) {
+            const paidAt = user.monthlyFeePaidAt || new Date();
+            user.subscriptionExpiresAt = new Date(paidAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+        }
         await user.save();
         await recordAudit({ actorUserId: req.user.id, action: 'USER_SUBSCRIPTION_UPDATED', resourceType: 'User', resourceId: user.id, metadata: { subscriptionStatus: user.subscriptionStatus, subscriptionPlan: user.subscriptionPlan, monthlyFeePaid: user.monthlyFeePaid, allowedServices: user.allowedServices }, ipAddress: req.ip });
         res.json({ success: true, user: { id: user.id, email: user.email, subscriptionStatus: user.subscriptionStatus, subscriptionPlan: user.subscriptionPlan, monthlyFeePaid: user.monthlyFeePaid, monthlyFeePaidAt: user.monthlyFeePaidAt, subscriptionExpiresAt: user.subscriptionExpiresAt, allowedServices: user.allowedServices } });
