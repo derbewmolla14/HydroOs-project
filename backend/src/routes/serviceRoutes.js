@@ -93,7 +93,10 @@ router.post('/admin/devices', manager, async (req, res, next) => {
         const serviceType = String(req.body.serviceType || '');
         if (!/^[A-Z0-9][A-Z0-9_-]{2,39}$/.test(serviceId)) return res.status(400).json({ success: false, message: 'Service ID must be 3–40 characters using letters, numbers, hyphens or underscores.' });
         if (!SERVICE_TYPES.includes(serviceType)) return res.status(400).json({ success: false, message: 'Select a valid service type.' });
-        const password = typeof req.body.servicePassword === 'string' && req.body.servicePassword.length >= 12 ? req.body.servicePassword : createPassword();
+        if (req.body.servicePassword !== undefined && (typeof req.body.servicePassword !== 'string' || req.body.servicePassword.length < 12)) {
+            return res.status(400).json({ success: false, message: 'A custom service password must contain at least 12 characters.' });
+        }
+        const password = req.body.servicePassword || createPassword();
         let assignedUser = null;
         if (req.body.assignedToUser) {
             if (!mongoose.isValidObjectId(req.body.assignedToUser)) return res.status(400).json({ success: false, message: 'Invalid assigned user.' });
@@ -207,6 +210,8 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
         const user = await User.findById(req.params.userId);
         if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
         const { subscriptionStatus, subscriptionPlan, monthlyFeePaid, subscriptionExpiresAt, allowedServices } = req.body;
+        const previousStatus = user.subscriptionStatus;
+        const previousExpiry = user.subscriptionExpiresAt;
         if (subscriptionStatus !== undefined && !['active', 'inactive', 'expired'].includes(subscriptionStatus)) return res.status(400).json({ success: false, message: 'Invalid subscription status.' });
         if (subscriptionPlan !== undefined && !['individual', 'all'].includes(subscriptionPlan)) return res.status(400).json({ success: false, message: 'Invalid subscription plan.' });
         if (monthlyFeePaid !== undefined && typeof monthlyFeePaid !== 'boolean') return res.status(400).json({ success: false, message: 'monthlyFeePaid must be true or false.' });
@@ -237,6 +242,9 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
             user.allowedServices = nextAllowed;
         }
         if (user.subscriptionPlan === 'all' && allowedServices === undefined && !user.allowedServices.length) user.allowedServices = [...SERVICE_TYPES];
+        const isRenewal = user.monthlyFeePaid && user.subscriptionStatus === 'active'
+            && (previousStatus !== 'active' || !previousExpiry || new Date(previousExpiry) <= new Date());
+        if (isRenewal) user.monthlyFeePaidAt = new Date();
         if (user.monthlyFeePaid && !user.subscriptionExpiresAt) {
             const paidAt = user.monthlyFeePaidAt || new Date();
             user.subscriptionExpiresAt = new Date(paidAt.getTime() + 30 * 24 * 60 * 60 * 1000);
