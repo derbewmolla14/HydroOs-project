@@ -76,7 +76,7 @@ export function DashboardPage() {
   const { user } = useAuth();
   const isOperator = (user?.systemRole || user?.role) === "OPERATOR";
   const subscriptionCurrent = user?.subscriptionStatus === "active" && user?.monthlyFeePaid === true
-    && (!user?.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+    && user?.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
   const enabledServices = !isOperator ? ["water_tank", "irrigation", "soil_moisture", "water_source", "water_quality"]
     : !subscriptionCurrent ? []
     : (user?.allowedServices || []);
