@@ -9,7 +9,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { api } from "../api";
+import { useLocation } from "react-router-dom";\nimport { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 
@@ -34,7 +34,7 @@ const blank = {
 };
 
 export function DeviceManagementPage() {
-  const { user } = useAuth();
+  const { user } = useAuth();\n  const location = useLocation();
   const canManage =
     roles.includes((user?.systemRole || user?.role)) &&
     ((user?.systemRole || user?.role) !== "SUB_ADMIN" ||
@@ -120,6 +120,9 @@ export function DeviceManagementPage() {
     setFormError("");
     setMessage("");
   }
+  useEffect(() => {
+    if (location.pathname.endsWith("/register")) openForm();
+  }, [location.pathname]);
   async function saveDevice(event) {
     event.preventDefault();
     setSaving(true);
