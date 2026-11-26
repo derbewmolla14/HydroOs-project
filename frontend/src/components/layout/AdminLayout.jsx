@@ -176,9 +176,9 @@ export function AdminLayout({ children, title = "Dashboard" }) {
             <span>{title}</span><small className="text-[.67rem] font-medium text-[#86a19d]">{organizationName}</small>
           </div>
           <div className="topbar-actions ml-auto flex items-center gap-[22px]">
-            <NavLink className="topbar-icon relative grid place-items-center text-[#65807d]" to="/notifications" aria-label="Notifications">
+            {systemRole !== "OPERATOR" && <NavLink className="topbar-icon relative grid place-items-center text-[#65807d]" to="/notifications" aria-label="Notifications">
               <Bell size={19}/>{unread > 0 && <i>{unread > 99 ? "99+" : unread}</i>}
-            </NavLink>
+            </NavLink>}
             {systemRole === "SUPER_ADMIN" && <NavLink className="topbar-icon relative grid place-items-center text-[#65807d]" to="/change-password" aria-label="Change password"><Settings size={18}/></NavLink>}
             <div className="profile-menu flex items-center gap-[9px]">
               <span className="profile-avatar grid h-[34px] w-[34px] place-items-center rounded-full bg-[#b6ecda] font-extrabold text-[#08604f]">{(user?.firstname || user?.email || "H").charAt(0).toUpperCase()}</span>
