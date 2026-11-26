@@ -7,6 +7,32 @@ import { deviceOrganizationFilter } from '../services/deviceService.js';
 import { monitoringFilter, waterLevelPercentage } from '../services/telemetryService.js';
 
 const router = express.Router();
+const serviceFields = {
+    water_tank: [{ waterLevel: { $ne: null } }, { waterVolume: { $ne: null } }],
+    irrigation: [{ flowRate: { $ne: null } }],
+    water_source: [{ flowRate: { $ne: null } }],
+    soil_moisture: [{ soilMoisture: { $ne: null } }],
+    water_quality: [{ ph: { $ne: null } }, { turbidity: { $ne: null } }, { electricalConductivity: { $ne: null } }, { temperature: { $ne: null } }]
+};
+
+function operatorServices(req, res) {
+    if (req.user.role !== 'OPERATOR') return null;
+    const user = req.user;
+    const current = user.subscriptionStatus === 'active' && user.monthlyFeePaid === true
+        && (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+    if (!current) {
+        res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid monthly subscription is required to view monitoring data.' });
+        return false;
+    }
+    return user.subscriptionPlan === 'all' ? Object.keys(serviceFields) : (user.allowedServices || []);
+}
+
+function applyServiceReadingScope(filter, services) {
+    if (!services) return filter;
+    const clauses = services.flatMap((service) => serviceFields[service] || []);
+    filter.$and = [...(filter.$and || []), clauses.length ? { $or: clauses } : { _id: { $exists: false } }];
+    return filter;
+}
 router.use(authenticate);
 
 async function scopedTankIds(req, filter) {
@@ -39,16 +65,21 @@ function bucketDate(date, granularity) {
 
 router.get('/overview', async (req, res, next) => {
     try {
+        const services = operatorServices(req, res);
+        if (services === false) return;
+        const services = operatorServices(req, res);
+        if (services === false) return;
         const filter = monitoringFilter(req.user, req.query.organizationId);
         const tankIds = await scopedTankIds(req, filter);
         if (tankIds) filter._id = { $in: tankIds };
-        const tanks = await Tank.find(filter).select('name code capacity status currentWaterLevel lastMeasuredAt assignedOperatorId').lean({ virtuals: true });
+        const tanks = services && !services.includes('water_tank') ? [] : await Tank.find(filter).select('name code capacity status currentWaterLevel lastMeasuredAt assignedOperatorId').lean({ virtuals: true });
         const organizationFilter = monitoringFilter(req.user, req.query.organizationId);
         const deviceFilter = { ...organizationFilter, ...(tankIds ? { tankId: { $in: tankIds } } : {}) };
-        const devices = await Device.find(deviceFilter).select('name identifier status tankId heartbeatIntervalSeconds lastSeenAt lastHeartbeatAt').populate('tankId', 'name code capacity currentWaterLevel').lean({ virtuals: true });
+        const devices = services && !services.includes('water_tank') ? [] : await Device.find(deviceFilter).select('name identifier status tankId heartbeatIntervalSeconds lastSeenAt lastHeartbeatAt').populate('tankId', 'name code capacity currentWaterLevel').lean({ virtuals: true });
         const now = Date.now();
         const online = devices.filter((device) => device.status === 'active' && device.lastSeenAt && now - new Date(device.lastSeenAt).getTime() <= device.heartbeatIntervalSeconds * 2000).length;
-        const readings = await DeviceReading.find({ ...organizationFilter, ...(tankIds ? { tankId: { $in: tankIds } } : {}), measuredAt: { $gte: new Date(now - 24 * 60 * 60 * 1000) } }).sort({ measuredAt: -1 }).limit(2000).lean();
+        const readingFilter = applyServiceReadingScope({ ...organizationFilter, ...(tankIds ? { tankId: { $in: tankIds } } : {}), measuredAt: { $gte: new Date(now - 24 * 60 * 60 * 1000) } }, services);
+        const readings = await DeviceReading.find(readingFilter).sort({ measuredAt: -1 }).limit(2000).lean();
         const waterReadings = readings.filter((reading) => reading.waterVolume !== null || reading.waterLevel !== null);
         const latest = waterReadings[0] || null;
         const averageLevel = tanks.length ? Math.round(tanks.reduce((sum, tank) => sum + (waterLevelPercentage(tank.currentWaterLevel, tank.capacity) || 0), 0) / tanks.length * 100) / 100 : null;
@@ -65,7 +96,7 @@ router.get('/history', async (req, res, next) => {
     try {
         const filter = monitoringFilter(req.user, req.query.organizationId);
         const tankIds = await scopedTankIds(req, filter);
-        const readingFilter = { ...filter, ...(tankIds ? { tankId: { $in: tankIds } } : {}) };
+        const readingFilter = applyServiceReadingScope({ ...filter, ...(tankIds ? { tankId: { $in: tankIds } } : {}) }, services);
         if (req.query.tankId) {
             if (tankIds && !tankIds.some((tankId) => tankId.toString() === req.query.tankId)) return res.json({ success: true, filters: { tankId: req.query.tankId }, points: [] });
             readingFilter.tankId = req.query.tankId;
