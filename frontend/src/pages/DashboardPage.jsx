@@ -74,6 +74,17 @@ function dateInputValue(date) {
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const isOperator = (user?.systemRole || user?.role) === "OPERATOR";
+  const subscriptionCurrent = user?.subscriptionStatus === "active" && user?.monthlyFeePaid === true
+    && (!user?.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+  const enabledServices = !isOperator ? ["water_tank", "irrigation", "soil_moisture", "water_source", "water_quality"]
+    : !subscriptionCurrent ? []
+    : user?.subscriptionPlan === "all" ? ["water_tank", "irrigation", "soil_moisture", "water_source", "water_quality"]
+    : (user?.allowedServices || []);
+  const hasTankAccess = !isOperator || enabledServices.includes("water_tank");
+  const hasFlowAccess = !isOperator || enabledServices.includes("irrigation") || enabledServices.includes("water_source");
+  const hasSoilAccess = !isOperator || enabledServices.includes("soil_moisture");
+  const hasQualityAccess = !isOperator || enabledServices.includes("water_quality");
   const [overview, setOverview] = useState(null);
   const [history, setHistory] = useState({
     points: [],
@@ -190,6 +201,12 @@ export function DashboardPage() {
             <Droplets size={46} />
           </div>
         </div>
+        {isOperator && <section className="rounded-xl border border-[#e0ebe7] bg-white p-4">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h2 className="font-bold text-[#214f4b]">My active services</h2><p className="text-xs text-[#78918e]">Only paid and linked modules are available in your workspace.</p></div><Link className="secondary-button" to="/services">Manage services</Link></div>
+          {enabledServices.length ? <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{[
+            ["water_tank","Water Tanks","/tanks"],["irrigation","Irrigation Control","/irrigation"],["soil_moisture","Soil Moisture","/soil-moisture"],["water_source","Water Sources","/water-sources"],["water_quality","Water Quality","/water-quality"]
+          ].filter(([key]) => enabledServices.includes(key)).map(([key,label,path]) => <Link key={key} to={path} className="rounded-lg border border-[#e4eeea] p-3 text-sm font-semibold text-[#245d53] hover:bg-[#f3faf6]">{label}<span className="ml-2 text-xs text-emerald-700">Active</span></Link>)}</div> : <p className="text-sm text-amber-800">No service is currently unlocked. Link a service or contact your administrator to activate your monthly subscription.</p>}
+        </section>}
         {loading && (
           <div className="dashboard-loading">Loading verified telemetry…</div>
         )}
@@ -203,7 +220,7 @@ export function DashboardPage() {
           <Radio size={15} /> Live updates are delivered through
           organization-scoped Socket.IO events.
         </div>
-        <div className="stats-grid">
+        {hasTankAccess && <div className="stats-grid">
           <StatCard
             label="Monitored tanks"
             value={summary.monitoredTanks ?? "—"}
@@ -265,9 +282,9 @@ export function DashboardPage() {
             icon={<RefreshCw size={20} />}
             tone="amber"
           />
-        </div>
+        </div>}
         <div className="monitoring-toolbar">
-          <label>
+          {hasTankAccess && <label>
             Tank
             <select
               value={filters.tankId}
@@ -285,7 +302,7 @@ export function DashboardPage() {
                 </option>
               ))}
             </select>
-          </label>
+          </label>}
           <label>
             From
             <input
@@ -412,7 +429,7 @@ export function DashboardPage() {
             </article>
           </div>
         )}
-        <div className="monitoring-lower-grid">
+        {hasTankAccess && <div className="monitoring-lower-grid">
           <article className="chart-card">
             <div className="chart-heading">
               <div>
