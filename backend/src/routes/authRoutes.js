@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import express from 'express';
 import { User } from '../models/User.js';
+import { Organization } from '../models/Organization.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { recordAudit } from '../services/auditService.js';
 import { hashPassword, hashToken, issueTokens, setAuthCookies, clearAuthCookies, verifyPassword, verifyRefreshToken } from '../services/authService.js';
@@ -30,7 +31,7 @@ function hasValidAdminInviteCode(providedCode) {
 
 router.post('/register', async (req, res, next) => {
     try {
-        const { email, password, firstname, lastname, username, phone, inviteCode } = req.body;
+        const { email, password, firstname, lastname, username, phone, inviteCode, organizationName } = req.body;
         const requestedRole = String(req.body.role || 'user').trim().toLowerCase();
         if (!email || !password || password.length < 8 || !firstname) {
             return res.status(400).json({ success: false, message: 'Email, first name, and a password of at least 8 characters are required.' });
@@ -47,33 +48,62 @@ router.post('/register', async (req, res, next) => {
             if (!hasValidAdminInviteCode(inviteCode)) {
                 return res.status(403).json({ success: false, message: 'Invalid Admin Invite Code.' });
             }
+            if (!organizationName?.trim()) {
+                return res.status(400).json({ success: false, message: 'Organization name is required for admin registration.' });
+            }
             assignedRole = 'ORGANIZATION_ADMIN';
         }
 
         const normalizedEmail = email.trim().toLowerCase();
-        const exists = await User.exists({ email: normalizedEmail });
-        if (exists) return res.status(409).json({ success: false, message: 'Email is already registered.' });
+        if (await User.exists({ email: normalizedEmail })) {
+            return res.status(409).json({ success: false, message: 'Email is already registered.' });
+        }
 
-        const user = await User.create({
-            email: normalizedEmail,
-            passwordHash: await hashPassword(password),
-            firstname: firstname.trim(),
-            lastname: lastname?.trim(),
-            username,
-            phone,
-            role: assignedRole,
-            status: 'active'
-        });
+        let organization = null;
+        if (requestedRole === 'admin') {
+            organization = await Organization.create({
+                name: organizationName.trim(),
+                code: `ORG-${crypto.randomBytes(5).toString('hex').toUpperCase()}`,
+                type: 'WATER_MANAGEMENT'
+            });
+        }
+
+        let user;
+        try {
+            user = await User.create({
+                email: normalizedEmail,
+                passwordHash: await hashPassword(password),
+                firstname: firstname.trim(),
+                lastname: lastname?.trim(),
+                username,
+                phone,
+                role: assignedRole,
+                organizationId: organization?._id || null,
+                status: 'active'
+            });
+        } catch (error) {
+            if (organization) await Organization.deleteOne({ _id: organization._id });
+            if (error?.code === 11000) return res.status(409).json({ success: false, message: 'Email is already registered.' });
+            throw error;
+        }
+
         const tokens = issueTokens(user);
         user.refreshTokenHash = hashToken(tokens.refreshToken);
         user.lastLoginAt = new Date();
         user.lastActivityAt = new Date();
         await user.save();
         setAuthCookies(res, tokens);
-        await recordAudit({ actorUserId: user.id, action: 'USER_REGISTERED', resourceType: 'User', resourceId: user.id, ipAddress: req.ip });
+        await recordAudit({
+            actorUserId: user.id,
+            action: 'USER_REGISTERED',
+            resourceType: 'User',
+            resourceId: user.id,
+            organizationId: organization?._id,
+            metadata: { role: assignedRole },
+            ipAddress: req.ip
+        });
         res.status(201).json({ success: true, message: 'Registration successful.', user: publicUser(user) });
     } catch (error) {
-        if (error?.code === 11000) return res.status(409).json({ success: false, message: 'Email is already registered.' });
         next(error);
     }
 });
