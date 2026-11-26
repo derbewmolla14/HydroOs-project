@@ -71,7 +71,7 @@ export function App() {
           <Route element={<ProtectedRoute roles={authenticatedRoles} />}>
             <Route path="/home" element={<DashboardPage />} />
             <Route element={<ProtectedRoute roles={adminRoles} />}>
-              <Route path="/dashboard" element={<DashboardPage />} />\n              <Route path="/organizations" element={<OrganizationsPage />} />\n              <Route path="/organizations/new" element={<OrganizationsPage />} />\n              <Route path="/organizations/settings" element={<OrganizationsPage />} />\n              <Route path="/users/create-admin" element={<UserManagementPage />} />\n              <Route path="/tanks/new" element={<TankManagementPage />} />\n              <Route path="/devices/register" element={<DeviceManagementPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />\n              <Route path="/dashboard/analytics" element={<DashboardPage />} />\n              <Route path="/users/roles" element={<UserManagementPage />} />\n              <Route path="/devices/diagnostics" element={<DeviceManagementPage />} />\n              <Route path="/alerts/history" element={<AlertsPage />} />\n              <Route path="/notifications/broadcasts" element={<NotificationsPage />} />\n              <Route path="/notifications/settings" element={<NotificationsPage />} />\n              <Route path="/organizations" element={<OrganizationsPage />} />\n              <Route path="/organizations/new" element={<OrganizationsPage />} />\n              <Route path="/organizations/settings" element={<OrganizationsPage />} />\n              <Route path="/users/create-admin" element={<UserManagementPage />} />\n              <Route path="/tanks/new" element={<TankManagementPage />} />\n              <Route path="/devices/register" element={<DeviceManagementPage />} />
               <Route path="/change-password" element={<PasswordChangePage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
@@ -87,7 +87,7 @@ export function App() {
               {adminPaths
                 .filter(
                   (path) =>
-                    !["/users", "/tanks", "/devices", "/reports", "/organizations", "/organizations/new", "/organizations/settings", "/users/create-admin", "/tanks/new", "/devices/register"].includes(path),
+                    !["/users", "/tanks", "/devices", "/reports", "/organizations", "/organizations/new", "/organizations/settings", "/users/create-admin", "/users/roles", "/tanks/new", "/devices/register", "/devices/diagnostics", "/dashboard/analytics", "/alerts/history", "/notifications/broadcasts", "/notifications/settings"].includes(path),
                 )
                 .map((path) => (
                   <Route key={path} path={path} element={<AdminModulePage />} />
