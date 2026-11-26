@@ -8,20 +8,27 @@ import { hashPassword, hashToken, issueTokens, setAuthCookies, clearAuthCookies,
 import { authenticate } from '../middleware/auth.js';
 import { PasswordOtp } from '../models/PasswordOtp.js';
 import { sendPasswordOtp } from '../services/emailService.js';
+import { env } from '../config/env.js';
 
 const router = express.Router();
-const publicUser = (user) => ({
-    id: user._id.toString(),
-    email: user.email,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    role: user.role,
-    organizationId: user.organizationId?.toString() || null,
-    permissions: user.permissions || []
-});
+const publicUser = (user) => {
+    const systemRole = user.role;
+    return {
+        id: user._id.toString(),
+        email: user.email,
+        firstName: user.firstName || user.firstname,
+        lastName: user.lastName || user.lastname,
+        phoneNumber: user.phoneNumber || user.phone,
+        // Keep the internal RBAC role separately for frontend authorization.
+        role: systemRole === 'OPERATOR' ? 'user' : 'admin',
+        systemRole,
+        organizationId: user.organizationId?.toString() || null,
+        permissions: user.permissions || []
+    };
+};
 
 function hasValidAdminInviteCode(providedCode) {
-    const expectedCode = process.env.ADMIN_INVITE_CODE?.trim();
+    const expectedCode = env.adminInviteCode?.trim();
     const candidate = typeof providedCode === 'string' ? providedCode.trim() : '';
     if (!expectedCode || !candidate) return false;
     const expected = Buffer.from(expectedCode, 'utf8');
@@ -30,39 +37,39 @@ function hasValidAdminInviteCode(providedCode) {
 }
 
 router.post('/register', async (req, res, next) => {
+    let organization = null;
     try {
-        const { email, password, firstname, lastname, username, phone, inviteCode, organizationName } = req.body;
+        const firstName = String(req.body.firstName ?? req.body.firstname ?? '').trim();
+        const lastName = String(req.body.lastName ?? req.body.lastname ?? '').trim();
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const phoneNumber = String(req.body.phoneNumber ?? req.body.phone ?? '').trim();
+        const password = req.body.password;
         const requestedRole = String(req.body.role || 'user').trim().toLowerCase();
-        if (!email || !password || password.length < 8 || !firstname) {
-            return res.status(400).json({ success: false, message: 'Email, first name, and a password of at least 8 characters are required.' });
-        }
-        if (!['user', 'admin'].includes(requestedRole)) {
-            return res.status(400).json({ success: false, message: 'Role must be either user or admin.' });
-        }
 
+        if (!firstName || !lastName || !email || !phoneNumber || !password) {
+            return res.status(400).json({ success: false, message: 'First name, last name, email, phone number, and password are required.' });
+        }
+        if (password.length < 8) return res.status(400).json({ success: false, message: 'Password must contain at least 8 characters.' });
+        if (!['user', 'admin'].includes(requestedRole)) return res.status(400).json({ success: false, message: 'Role must be either user or admin.' });
+
+        const isConfiguredSuperAdmin = Boolean(env.superAdminEmail && email === env.superAdminEmail);
         let assignedRole = 'OPERATOR';
         if (requestedRole === 'admin') {
-            if (!process.env.ADMIN_INVITE_CODE?.trim()) {
-                return res.status(503).json({ success: false, message: 'Admin registration is not configured. Contact the HydroOS administrator.' });
+            if (!env.adminInviteCode) return res.status(503).json({ success: false, message: 'Admin registration is not configured. Contact the HydroOS administrator.' });
+            if (!hasValidAdminInviteCode(req.body.inviteCode)) {
+                return res.status(403).json({ success: false, message: 'Invalid Admin Invitation Code.' });
             }
-            if (!hasValidAdminInviteCode(inviteCode)) {
-                return res.status(403).json({ success: false, message: 'Invalid Admin Invite Code.' });
-            }
-            if (!organizationName?.trim()) {
-                return res.status(400).json({ success: false, message: 'Organization name is required for admin registration.' });
-            }
-            assignedRole = 'ORGANIZATION_ADMIN';
+            assignedRole = isConfiguredSuperAdmin ? 'SUPER_ADMIN' : 'ORGANIZATION_ADMIN';
+        } else if (isConfiguredSuperAdmin) {
+            return res.status(403).json({ success: false, message: 'The configured Super Admin email must register using the Admin role and a valid invitation code.' });
         }
 
-        const normalizedEmail = email.trim().toLowerCase();
-        if (await User.exists({ email: normalizedEmail })) {
-            return res.status(409).json({ success: false, message: 'Email is already registered.' });
-        }
+        if (await User.exists({ email })) return res.status(409).json({ success: false, message: 'Email is already registered.' });
 
-        let organization = null;
-        if (requestedRole === 'admin') {
+        if (assignedRole === 'ORGANIZATION_ADMIN') {
+            const organizationName = String(req.body.organizationName || `${firstName} ${lastName} Organization`).trim();
             organization = await Organization.create({
-                name: organizationName.trim(),
+                name: organizationName,
                 code: `ORG-${crypto.randomBytes(5).toString('hex').toUpperCase()}`,
                 type: 'WATER_MANAGEMENT'
             });
@@ -71,12 +78,15 @@ router.post('/register', async (req, res, next) => {
         let user;
         try {
             user = await User.create({
-                email: normalizedEmail,
+                firstName,
+                lastName,
+                phoneNumber,
+                // Keep old field names populated while the rest of the app migrates.
+                firstname: firstName,
+                lastname: lastName,
+                phone: phoneNumber,
+                email,
                 passwordHash: await hashPassword(password),
-                firstname: firstname.trim(),
-                lastname: lastname?.trim(),
-                username,
-                phone,
                 role: assignedRole,
                 organizationId: organization?._id || null,
                 status: 'active'
@@ -102,15 +112,18 @@ router.post('/register', async (req, res, next) => {
             metadata: { role: assignedRole },
             ipAddress: req.ip
         });
+        // JWTs remain in HttpOnly cookies; never expose bearer tokens to browser JS.
         res.status(201).json({ success: true, message: 'Registration successful.', user: publicUser(user) });
     } catch (error) {
+        if (organization) await Organization.deleteOne({ _id: organization._id }).catch(() => {});
         next(error);
     }
 });
 
 router.post('/login', async (req, res, next) => {
     try {
-        const email = req.body.email?.trim().toLowerCase();
+        const email = String(req.body.email || '').trim().toLowerCase();
+        if (!email || !req.body.password) return res.status(400).json({ success: false, message: 'Email and password are required.' });
         const user = await User.findOne({ email }).select('+passwordHash +password +refreshTokenHash');
         if (!user || user.status !== 'active') return res.status(401).json({ success: false, message: 'Invalid credentials.' });
         const valid = user.passwordHash
