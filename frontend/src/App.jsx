@@ -19,7 +19,7 @@ import { NotificationsPage } from "./pages/NotificationsPage";
 import { AlertConfigurationPage } from "./pages/AlertConfigurationPage";
 import { UserManagementPage } from "./pages/UserManagementPage";
 import { PasswordChangePage } from "./pages/PasswordChangePage";
-import { ReportsPage } from "./pages/ReportsPage";
+import { ReportsPage } from "./pages/ReportsPage";\nimport { OrganizationsPage } from "./pages/OrganizationsPage";
 
 const authenticatedRoles = [
   "SUPER_ADMIN",
@@ -29,9 +29,9 @@ const authenticatedRoles = [
 ];
 const adminRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
 const adminPaths = [
-  "/organizations",
-  "/users",
-  "/tanks",
+  "/dashboard/analytics",\n  "/organizations",\n  "/organizations/new",\n  "/organizations/settings",
+  "/users",\n  "/users/roles",
+  "/tanks",\n  "/tanks/hardware",
   "/tanks/level",
   "/tanks/status",
   "/tanks/history",
@@ -43,13 +43,13 @@ const adminPaths = [
   "/soil-moisture/sensors",
   "/soil-moisture/thresholds",
   "/soil-moisture/history",
-  "/water-sources",
+  "/water-sources",\n  "/water-sources/intake",\n  "/water-sources/flow",\n  "/water-sources/history",
   "/water-quality",
-  "/water-quality/history",
-  "/devices",
+  "/water-quality/history",\n  "/water-quality/calibration",
+  "/devices",\n  "/devices/diagnostics",
   "/schedule",
   "/reports",
-  "/audit-logs",
+  "/alerts/history",\n  "/notifications/broadcasts",\n  "/notifications/settings",\n  "/audit-logs",
   "/settings",
 ];
 
@@ -71,7 +71,7 @@ export function App() {
           <Route element={<ProtectedRoute roles={authenticatedRoles} />}>
             <Route path="/home" element={<DashboardPage />} />
             <Route element={<ProtectedRoute roles={adminRoles} />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />\n              <Route path="/organizations" element={<OrganizationsPage />} />\n              <Route path="/organizations/new" element={<OrganizationsPage />} />\n              <Route path="/organizations/settings" element={<OrganizationsPage />} />\n              <Route path="/users/create-admin" element={<UserManagementPage />} />\n              <Route path="/tanks/new" element={<TankManagementPage />} />\n              <Route path="/devices/register" element={<DeviceManagementPage />} />
               <Route path="/change-password" element={<PasswordChangePage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
@@ -87,7 +87,7 @@ export function App() {
               {adminPaths
                 .filter(
                   (path) =>
-                    !["/users", "/tanks", "/devices", "/reports"].includes(path),
+                    !["/users", "/tanks", "/devices", "/reports", "/organizations", "/organizations/new", "/organizations/settings", "/users/create-admin", "/tanks/new", "/devices/register"].includes(path),
                 )
                 .map((path) => (
                   <Route key={path} path={path} element={<AdminModulePage />} />
