@@ -86,7 +86,9 @@ export function AdminLayout({ children, title = "Dashboard" }) {
       children: systemRole === "OPERATOR"
         ? [["System Overview", dashboardPath]]
         : item.children.map(([label, path]) => [label, path === "/dashboard" ? dashboardPath : path]),
-    } : item);
+    } : systemRole === "OPERATOR" && item.serviceType
+      ? { ...item, children: item.children.filter(([label]) => label !== "Add New Tanker") }
+      : item);
   const activePath = location.pathname;
   const activeGroups = new Set(allowedNavigation
     .filter((item) => item.children?.some(([, path]) => activePath === path || (path !== item.path && activePath.startsWith(path + "/"))))
