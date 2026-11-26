@@ -70,7 +70,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const dashboardPath = systemRole === "OPERATOR" || systemRole === "user" ? "/home" : "/dashboard";
   const subscriptionCurrent = user?.subscriptionStatus === "active"
     && user?.monthlyFeePaid === true
-    && (!user?.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+    && user?.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
   const allowedNavigation = navigation
     .filter((item) => {
       if (systemRole === "OPERATOR") {
