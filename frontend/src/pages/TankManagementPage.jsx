@@ -58,8 +58,8 @@ export function TankManagementPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const canManage =
-    managerRoles.includes(user?.role) &&
-    (user?.role !== "SUB_ADMIN" ||
+    managerRoles.includes((user?.systemRole || user?.role)) &&
+    ((user?.systemRole || user?.role) !== "SUB_ADMIN" ||
       (user.permissions || []).some((permission) =>
         ["tanks:manage", "manage_tanks", "tanks"].includes(permission),
       ));
@@ -111,12 +111,12 @@ export function TankManagementPage() {
         .get("/tanks/operators")
         .then(({ data }) => setOperators(data.operators))
         .catch(() => setOperators([]));
-    if (user?.role === "SUPER_ADMIN")
+    if ((user?.systemRole || user?.role) === "SUPER_ADMIN")
       api
         .get("/dashboard/overview")
         .then(({ data }) => setOrganizations(data.organizations))
         .catch(() => setOrganizations([]));
-  }, [canManage, user?.role]);
+  }, [canManage, (user?.systemRole || user?.role)]);
 
   const summary = useMemo(
     () => ({
@@ -215,7 +215,7 @@ export function TankManagementPage() {
         longitude: form.longitude === "" ? null : Number(form.longitude),
         assignedOperatorId: form.assignedOperatorId || null,
       };
-      if (user.role === "SUPER_ADMIN" && !form._id)
+      if ((user.systemRole || user.role) === "SUPER_ADMIN" && !form._id)
         payload.organizationId = form.organizationId;
       if (form._id) await api.patch(`/tanks/${form._id}`, payload);
       else await api.post("/tanks", payload);
@@ -470,7 +470,7 @@ export function TankManagementPage() {
                 ) : (
                   <>
                     <div className="form-grid">
-                      {user.role === "SUPER_ADMIN" && !form._id && (
+                      {(user.systemRole || user.role) === "SUPER_ADMIN" && !form._id && (
                         <label>
                           Organization
                           <select
