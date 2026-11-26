@@ -154,7 +154,7 @@ export function DashboardPage() {
   return (
     <AdminLayout title="Dashboard">
       <section className="dashboard-page monitoring-page">
-        {user?.role === "SUPER_ADMIN" && (
+        {(user?.systemRole || user?.role) === "SUPER_ADMIN" && (
           <section className="owner-actions" aria-label="Owner controls">
             <div>
               <strong>Owner controls</strong>
