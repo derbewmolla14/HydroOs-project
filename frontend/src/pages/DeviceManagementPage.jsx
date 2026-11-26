@@ -9,7 +9,8 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useLocation } from "react-router-dom";\nimport { api } from "../api";
+import { useLocation } from "react-router-dom";
+import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 
