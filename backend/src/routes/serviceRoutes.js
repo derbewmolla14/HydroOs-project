@@ -231,6 +231,7 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
         if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
         const { subscriptionStatus, subscriptionPlan, monthlyFeePaid, subscriptionExpiresAt, allowedServices } = req.body;
         const previousStatus = user.subscriptionStatus;
+        const previousPlan = user.subscriptionPlan;
         const previousExpiry = user.subscriptionExpiresAt;
         if (subscriptionStatus !== undefined && !['active', 'inactive', 'expired'].includes(subscriptionStatus)) return res.status(400).json({ success: false, message: 'Invalid subscription status.' });
         if (subscriptionPlan !== undefined && !['individual', 'all'].includes(subscriptionPlan)) return res.status(400).json({ success: false, message: 'Invalid subscription plan.' });
@@ -261,7 +262,7 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
             }
             user.allowedServices = nextAllowed;
         }
-        if (user.subscriptionPlan === 'all' && allowedServices === undefined && !user.allowedServices.length) user.allowedServices = [...SERVICE_TYPES];
+        if (user.subscriptionPlan === 'all' && previousPlan !== 'all' && allowedServices === undefined) user.allowedServices = [...SERVICE_TYPES];
         const isRenewal = user.monthlyFeePaid && user.subscriptionStatus === 'active'
             && (previousStatus !== 'active' || !previousExpiry || new Date(previousExpiry) <= new Date());
         if (isRenewal) user.monthlyFeePaidAt = new Date();
