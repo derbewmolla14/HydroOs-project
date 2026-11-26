@@ -115,7 +115,6 @@ router.post('/register', async (req, res, next) => {
         // JWTs remain in HttpOnly cookies; never expose bearer tokens to browser JS.
         res.status(201).json({ success: true, message: 'Registration successful.', user: publicUser(user) });
     } catch (error) {
-        if (organization) await Organization.deleteOne({ _id: organization._id }).catch(() => {});
         next(error);
     }
 });
