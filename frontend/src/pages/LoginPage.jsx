@@ -8,7 +8,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 const adminRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
 
 function dashboardForRole(role) {
-  return adminRoles.includes(role) ? "/dashboard" : "/dashboard";
+  return adminRoles.includes(role) ? "/dashboard" : "/home";
 }
 
 export function LoginPage() {
