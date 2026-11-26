@@ -28,6 +28,7 @@ const blank = {
   identifier: "",
   name: "",
   deviceType: "level_sensor",
+  serviceType: "water_tank",
   protocol: "http",
   firmwareVersion: "",
   heartbeatIntervalSeconds: 300,
@@ -438,6 +439,16 @@ export function DeviceManagementPage() {
                           {type}
                         </option>
                       ))}
+                    </select>
+                  </label>
+                  <label>
+                    Service module
+                    <select name="serviceType" value={form.serviceType} onChange={updateForm}>
+                      <option value="water_tank">Water Tanks</option>
+                      <option value="irrigation">Irrigation Control</option>
+                      <option value="soil_moisture">Soil Moisture</option>
+                      <option value="water_source">Water Sources</option>
+                      <option value="water_quality">Water Quality</option>
                     </select>
                   </label>
                   <label>
