@@ -8,7 +8,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 const adminRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
 
 function dashboardForRole(role) {
-  return adminRoles.includes(role) ? "/dashboard" : "/home";
+  return adminRoles.includes(role) || role === "admin" ? "/dashboard" : "/home";
 }
 
 export function LoginPage() {
@@ -26,7 +26,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  if (user) return <Navigate to={dashboardForRole(user.role)} replace />;
+  if (user) return <Navigate to={dashboardForRole(user.systemRole || user.role)} replace />;
   async function submit(event) {
     event.preventDefault();
     setError("");
@@ -37,7 +37,7 @@ export function LoginPage() {
       else localStorage.removeItem("hydroos-remembered-email");
       const authenticatedUser = await login(form.email, form.password);
       const requestedPath = location.state?.from?.pathname;
-      navigate(requestedPath || dashboardForRole(authenticatedUser.role), {
+      navigate(requestedPath || dashboardForRole(authenticatedUser.systemRole || authenticatedUser.role), {
         replace: true,
       });
     } catch (requestError) {
