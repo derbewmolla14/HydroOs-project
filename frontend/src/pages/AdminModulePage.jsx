@@ -77,13 +77,13 @@ export function AdminModulePage() {
   const readings = overview?.latestReadings || [];
   const devices = overview?.devices || [];
   const tanks = overview?.tanks || [];
-  const latest = readings[0] || {};
   const relevantReadings = useMemo(() => {
     if (key === "quality") return readings.filter((r) => r.ph != null || r.turbidity != null || r.electricalConductivity != null || r.temperature != null);
     if (key === "soil") return readings.filter((r) => r.soilMoisture != null);
     if (key === "sources" || key === "irrigation") return readings.filter((r) => r.flowRate != null);
     return readings.filter((r) => r.waterLevel != null || r.waterVolume != null);
   }, [readings, key]);
+  const latest = relevantReadings[0] || readings[0] || {};
 
   const title = module.title;
   const pageTitle = module.paths.find(([, path]) => path === pathname)?.[0] || title;
