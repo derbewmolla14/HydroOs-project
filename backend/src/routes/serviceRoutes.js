@@ -41,7 +41,7 @@ router.get('/me', async (req, res, next) => {
     } catch (error) { next(error); }
 });
 
-router.post('/link', async (req, res, next) => {
+router.post('/link', requireRoles('OPERATOR'), async (req, res, next) => {
     try {
         const serviceId = String(req.body.serviceId || '').trim().toUpperCase();
         const servicePassword = String(req.body.servicePassword || '');
