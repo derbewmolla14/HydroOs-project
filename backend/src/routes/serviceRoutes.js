@@ -175,6 +175,19 @@ router.get('/admin/users', manager, async (req, res, next) => {
     } catch (error) { next(error); }
 });
 
+router.post('/admin/devices/:id/rotate-password', manager, async (req, res, next) => {
+    try {
+        if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid service record.' });
+        const service = await ServiceDevice.findById(req.params.id);
+        if (!service) return res.status(404).json({ success: false, message: 'Service record not found.' });
+        const servicePassword = createPassword();
+        service.servicePasswordHash = await hashPassword(servicePassword);
+        await service.save();
+        await recordAudit({ actorUserId: req.user.id, action: 'SERVICE_PASSWORD_ROTATED', resourceType: 'ServiceDevice', resourceId: service.id, metadata: { serviceId: service.serviceId }, ipAddress: req.ip });
+        res.json({ success: true, credentials: { serviceId: service.serviceId, servicePassword }, message: 'Copy the new password now. The previous password is no longer valid.' });
+    } catch (error) { next(error); }
+});
+
 router.patch('/admin/users/:userId/subscription', manager, async (req, res, next) => {
     try {
         if (!mongoose.isValidObjectId(req.params.userId)) return res.status(400).json({ success: false, message: 'Invalid user ID.' });
