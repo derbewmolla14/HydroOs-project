@@ -45,7 +45,7 @@ export function UserManagementPage() {
         api.get("/users", { params: { search } }),
         api.get("/tanks", { params: { limit: 100 } }),
       ];
-      if (user?.role === "SUPER_ADMIN")
+      if ((user?.systemRole || user?.role) === "SUPER_ADMIN")
         requests.push(api.get("/dashboard/overview"));
       const [userResponse, tankResponse, overviewResponse] =
         await Promise.all(requests);
@@ -65,7 +65,7 @@ export function UserManagementPage() {
   }
   useEffect(() => {
     load();
-  }, [search, user?.role]);
+  }, [search, (user?.systemRole || user?.role)]);
 
   const selected = useMemo(
     () => users.find((item) => item.id === selectedId),
@@ -75,7 +75,7 @@ export function UserManagementPage() {
     setForm({
       ...initialForm,
       organizationId:
-        user?.role === "SUPER_ADMIN" ? "" : user?.organizationId || "",
+        (user?.systemRole || user?.role) === "SUPER_ADMIN" ? "" : user?.organizationId || "",
     });
     setMessage({ error: "", success: "", token: "" });
   }
@@ -390,7 +390,7 @@ export function UserManagementPage() {
                     {roles
                       .filter(
                         (role) =>
-                          user?.role === "SUPER_ADMIN" ||
+                          (user?.systemRole || user?.role) === "SUPER_ADMIN" ||
                           role !== "ORGANIZATION_ADMIN",
                       )
                       .map((role) => (
@@ -398,7 +398,7 @@ export function UserManagementPage() {
                       ))}
                   </select>
                 </label>
-                {user?.role === "SUPER_ADMIN" && !form.id && (
+                {(user?.systemRole || user?.role) === "SUPER_ADMIN" && !form.id && (
                   <label className="form-span-two">
                     Organization
                     <select
