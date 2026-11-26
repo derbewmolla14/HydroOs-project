@@ -24,7 +24,7 @@ const publicService = (item) => ({
 function subscriptionIsCurrent(user) {
     return user.subscriptionStatus === 'active'
         && user.monthlyFeePaid === true
-        && (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+        && user.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
 }
 
 function createPassword() {
