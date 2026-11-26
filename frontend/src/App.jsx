@@ -19,7 +19,8 @@ import { NotificationsPage } from "./pages/NotificationsPage";
 import { AlertConfigurationPage } from "./pages/AlertConfigurationPage";
 import { UserManagementPage } from "./pages/UserManagementPage";
 import { PasswordChangePage } from "./pages/PasswordChangePage";
-import { ReportsPage } from "./pages/ReportsPage";\nimport { OrganizationsPage } from "./pages/OrganizationsPage";
+import { ReportsPage } from "./pages/ReportsPage";
+import { OrganizationsPage } from "./pages/OrganizationsPage";
 
 const authenticatedRoles = [
   "SUPER_ADMIN",
