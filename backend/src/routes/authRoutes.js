@@ -193,7 +193,7 @@ router.post('/password-change/request', authenticate, async (req, res, next) => 
 
 router.post('/password-change/confirm', authenticate, async (req, res, next) => {
     try {
-        if (!req.body.code || !/^\\d{6}$/.test(String(req.body.code)) || !req.body.password || req.body.password.length < 8) return res.status(400).json({ success: false, message: 'A six-digit OTP and a password of at least 8 characters are required.' });
+        if (!req.body.code || !/^[0-9]{6}$/.test(String(req.body.code)) || !req.body.password || req.body.password.length < 8) return res.status(400).json({ success: false, message: 'A six-digit OTP and a password of at least 8 characters are required.' });
         const otp = await PasswordOtp.findOne({ userId: req.user.id, purpose: 'PASSWORD_CHANGE', consumedAt: { $exists: false }, expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 });
         if (!otp || otp.attempts >= 5 || hashToken(String(req.body.code)) !== otp.codeHash) {
             if (otp) await PasswordOtp.updateOne({ _id: otp._id }, { $inc: { attempts: 1 } });
