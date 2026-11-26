@@ -24,7 +24,8 @@ function operatorServices(req, res) {
         res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid monthly subscription is required to view monitoring data.' });
         return false;
     }
-    return user.subscriptionPlan === 'all' ? Object.keys(serviceFields) : (user.allowedServices || []);
+    const allowed = user.allowedServices || [];
+    return user.subscriptionPlan === 'all' && allowed.length === 0 ? Object.keys(serviceFields) : allowed;
 }
 
 function applyServiceReadingScope(filter, services) {
