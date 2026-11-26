@@ -18,6 +18,7 @@ import { notificationRoutes } from './routes/notificationRoutes.js';
 import { userRoutes } from './routes/userRoutes.js';
 import { exportRoutes } from './routes/exportRoutes.js';
 import { serviceRoutes } from './routes/serviceRoutes.js';
+import { waterLevelRoutes } from './routes/waterLevelRoutes.js';
 
 const currentFile = fileURLToPath(import.meta.url);
 const srcDirectory = path.dirname(currentFile);
@@ -27,6 +28,8 @@ export function createApp(io) {
     const app = express();
     app.set('io', io);
     app.set('trust proxy', 1);
+    // Standalone Tinkercad bridge endpoint: public wildcard CORS, isolated from authenticated API CORS.
+    app.use('/api/water-level', waterLevelRoutes);
     const corsOptions = {
         origin(origin, callback) {
             if (!origin || env.clientOrigins.includes(origin)) return callback(null, true);
