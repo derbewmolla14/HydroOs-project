@@ -138,7 +138,7 @@ export function ServiceManagementPage() {
     });
   }
 
-  const subscriptionIsActive = subscription?.subscriptionStatus === "active" && subscription?.monthlyFeePaid === true && (!subscription?.subscriptionExpiresAt || new Date(subscription.subscriptionExpiresAt) > new Date());
+  const subscriptionIsActive = subscription?.subscriptionStatus === "active" && subscription?.monthlyFeePaid === true && subscription?.subscriptionExpiresAt && new Date(subscription.subscriptionExpiresAt) > new Date();
 
   return <AdminLayout title={isSuperAdmin ? "Service Activation & Management" : "My Services"}>
     <main className="mx-auto grid w-full max-w-7xl gap-6 p-1">
