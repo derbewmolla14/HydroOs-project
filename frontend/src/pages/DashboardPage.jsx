@@ -79,7 +79,6 @@ export function DashboardPage() {
     && (!user?.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
   const enabledServices = !isOperator ? ["water_tank", "irrigation", "soil_moisture", "water_source", "water_quality"]
     : !subscriptionCurrent ? []
-    : user?.subscriptionPlan === "all" && !(user?.allowedServices || []).length ? ["water_tank", "irrigation", "soil_moisture", "water_source", "water_quality"]
     : (user?.allowedServices || []);
   const hasTankAccess = !isOperator || enabledServices.includes("water_tank");
   const hasFlowAccess = !isOperator || enabledServices.includes("irrigation") || enabledServices.includes("water_source");
