@@ -67,8 +67,6 @@ router.get('/overview', async (req, res, next) => {
     try {
         const services = operatorServices(req, res);
         if (services === false) return;
-        const services = operatorServices(req, res);
-        if (services === false) return;
         const filter = monitoringFilter(req.user, req.query.organizationId);
         const tankIds = await scopedTankIds(req, filter);
         if (tankIds) filter._id = { $in: tankIds };
@@ -94,6 +92,8 @@ router.get('/overview', async (req, res, next) => {
 
 router.get('/history', async (req, res, next) => {
     try {
+        const services = operatorServices(req, res);
+        if (services === false) return;
         const filter = monitoringFilter(req.user, req.query.organizationId);
         const tankIds = await scopedTankIds(req, filter);
         const readingFilter = applyServiceReadingScope({ ...filter, ...(tankIds ? { tankId: { $in: tankIds } } : {}) }, services);
@@ -123,7 +123,7 @@ router.get('/history', async (req, res, next) => {
             buckets.set(key, bucket);
         }
         const averages = (values) => values.length ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length * 100) / 100 : null;
-        res.json({ success: true, filters: { start, end, granularity, tankId: req.query.tankId || null }, points: [...buckets.values()].map((bucket) => ({ ...bucket, ...Object.fromEntries(['waterLevel', 'waterVolume', 'flowRate', 'temperature', 'ph', 'turbidity', 'electricalConductivity', 'batteryLevel'].map((field) => [field, averages(bucket[field])])) })) });
+        res.json({ success: true, filters: { start, end, granularity, tankId: req.query.tankId || null }, points: [...buckets.values()].map((bucket) => ({ ...bucket, ...Object.fromEntries(['waterLevel', 'waterVolume', 'flowRate', 'temperature', 'ph', 'turbidity', 'electricalConductivity', 'soilMoisture', 'batteryLevel'].map((field) => [field, averages(bucket[field])])) })) });
     } catch (error) { next(error); }
 });
 
