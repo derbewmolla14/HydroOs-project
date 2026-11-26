@@ -263,11 +263,18 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
             user.allowedServices = nextAllowed;
         }
         if (user.subscriptionPlan === 'all' && previousPlan !== 'all' && allowedServices === undefined) user.allowedServices = [...SERVICE_TYPES];
+        const renewalTime = new Date();
         const isRenewal = user.monthlyFeePaid && user.subscriptionStatus === 'active'
-            && (previousStatus !== 'active' || !previousExpiry || new Date(previousExpiry) <= new Date());
-        if (isRenewal) user.monthlyFeePaidAt = new Date();
+            && (previousStatus !== 'active' || !previousExpiry || new Date(previousExpiry) <= renewalTime);
+        if (isRenewal) {
+            user.monthlyFeePaidAt = renewalTime;
+            const requestedExpiry = subscriptionExpiresAt ? new Date(subscriptionExpiresAt) : null;
+            if (!requestedExpiry || requestedExpiry <= renewalTime) {
+                user.subscriptionExpiresAt = new Date(renewalTime.getTime() + 30 * 24 * 60 * 60 * 1000);
+            }
+        }
         if (user.monthlyFeePaid && !user.subscriptionExpiresAt) {
-            const paidAt = user.monthlyFeePaidAt || new Date();
+            const paidAt = user.monthlyFeePaidAt || renewalTime;
             user.subscriptionExpiresAt = new Date(paidAt.getTime() + 30 * 24 * 60 * 60 * 1000);
         }
         await user.save();
