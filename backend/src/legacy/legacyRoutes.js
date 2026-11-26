@@ -7,8 +7,6 @@ import XLSX from 'xlsx';
 import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
 import { Receipt } from '../models/Receipt.js';
-import { User } from '../models/User.js';
-import { hashPassword, verifyPassword } from '../services/authService.js';
 
 function createUploadMiddleware() {
     const { cloudName, apiKey, apiSecret } = env.cloudinary;
@@ -31,22 +29,7 @@ export function registerLegacyRoutes(app, io, projectRoot) {
 
     app.post('/api/login', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/login.' }));
 
-    app.post('/api/reset-password', async (req, res, next) => {
-        try {
-            const { email, phone, newPassword } = req.body;
-            const user = await User.findOneAndUpdate(
-                { email: email?.toLowerCase(), phone },
-                { passwordHash: await hashPassword(newPassword), $unset: { password: 1 } },
-                { new: true }
-            );
-            if (!user) {
-                return res.status(404).json({ success: false, message: 'User not found' });
-            }
-            res.json({ success: true });
-        } catch (error) {
-            next(error);
-        }
-    });
+    app.post('/api/reset-password', (req, res) => res.status(410).json({ success: false, message: 'This password reset endpoint has been retired. Use /api/v1/auth/reset-password.' }));;
 
     app.post('/submit-payment', (req, res, next) => {
         if (!upload) {
