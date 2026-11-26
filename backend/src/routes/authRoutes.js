@@ -49,7 +49,7 @@ router.post('/register', async (req, res, next) => {
         const password = req.body.password;
         const requestedRole = String(req.body.role || 'user').trim().toLowerCase();
 
-        if (!firstName || !lastName || !email || !phoneNumber || !password) {
+        if (!firstName || !lastName || !email || !phoneNumber || typeof password !== 'string' || !password) {
             return res.status(400).json({ success: false, message: 'First name, last name, email, phone number, and password are required.' });
         }
         if (password.length < 8) return res.status(400).json({ success: false, message: 'Password must contain at least 8 characters.' });
