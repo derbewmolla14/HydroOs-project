@@ -21,6 +21,7 @@ import { UserManagementPage } from "./pages/UserManagementPage";
 import { PasswordChangePage } from "./pages/PasswordChangePage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { OrganizationsPage } from "./pages/OrganizationsPage";
+import { ServiceManagementPage } from "./pages/ServiceManagementPage";
 
 const authenticatedRoles = [
   "SUPER_ADMIN",
@@ -36,26 +37,6 @@ const adminPaths = [
   "/organizations/settings",
   "/users",
   "/users/roles",
-  "/tanks",
-  "/tanks/hardware",
-  "/tanks/level",
-  "/tanks/status",
-  "/tanks/history",
-  "/irrigation",
-  "/irrigation/valves",
-  "/irrigation/schedules",
-  "/irrigation/history",
-  "/soil-moisture",
-  "/soil-moisture/sensors",
-  "/soil-moisture/thresholds",
-  "/soil-moisture/history",
-  "/water-sources",
-  "/water-sources/intake",
-  "/water-sources/flow",
-  "/water-sources/history",
-  "/water-quality",
-  "/water-quality/history",
-  "/water-quality/calibration",
   "/devices",
   "/devices/diagnostics",
   "/schedule",
@@ -84,6 +65,38 @@ export function App() {
           />
           <Route element={<ProtectedRoute roles={authenticatedRoles} />}>
             <Route path="/home" element={<DashboardPage />} />
+            <Route element={<ProtectedRoute roles={["SUPER_ADMIN", "OPERATOR"]} />}>
+              <Route path="/services" element={<ServiceManagementPage />} />
+            </Route>
+            <Route element={<ProtectedRoute serviceType="water_tank" />}>
+              <Route path="/tanks/level" element={<AdminModulePage />} />
+              <Route path="/tanks/hardware" element={<AdminModulePage />} />
+              <Route path="/tanks/status" element={<AdminModulePage />} />
+              <Route path="/tanks/history" element={<AdminModulePage />} />
+            </Route>
+            <Route element={<ProtectedRoute serviceType="irrigation" />}>
+              <Route path="/irrigation" element={<AdminModulePage />} />
+              <Route path="/irrigation/valves" element={<AdminModulePage />} />
+              <Route path="/irrigation/schedules" element={<AdminModulePage />} />
+              <Route path="/irrigation/history" element={<AdminModulePage />} />
+            </Route>
+            <Route element={<ProtectedRoute serviceType="soil_moisture" />}>
+              <Route path="/soil-moisture" element={<AdminModulePage />} />
+              <Route path="/soil-moisture/sensors" element={<AdminModulePage />} />
+              <Route path="/soil-moisture/thresholds" element={<AdminModulePage />} />
+              <Route path="/soil-moisture/history" element={<AdminModulePage />} />
+            </Route>
+            <Route element={<ProtectedRoute serviceType="water_source" />}>
+              <Route path="/water-sources" element={<AdminModulePage />} />
+              <Route path="/water-sources/intake" element={<AdminModulePage />} />
+              <Route path="/water-sources/flow" element={<AdminModulePage />} />
+              <Route path="/water-sources/history" element={<AdminModulePage />} />
+            </Route>
+            <Route element={<ProtectedRoute serviceType="water_quality" />}>
+              <Route path="/water-quality" element={<AdminModulePage />} />
+              <Route path="/water-quality/history" element={<AdminModulePage />} />
+              <Route path="/water-quality/calibration" element={<AdminModulePage />} />
+            </Route>
             <Route element={<ProtectedRoute roles={adminRoles} />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/dashboard/analytics" element={<DashboardPage />} />
