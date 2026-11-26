@@ -50,12 +50,13 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
-  const dashboardPath = user?.role === "OPERATOR" ? "/home" : "/dashboard";
+  const systemRole = user?.systemRole || user?.role;
+  const dashboardPath = systemRole === "OPERATOR" || systemRole === "user" ? "/home" : "/dashboard";
   const allowedNavigation = navigation
     .map(([label, path, icon, roles], index) =>
       index === 0 ? [label, dashboardPath, icon, roles] : [label, path, icon, roles],
     )
-    .filter(([, , , roles]) => !roles || roles.includes(user?.role));
+    .filter(([, , , roles]) => !roles || roles.includes(systemRole));
   useEffect(() => {
     api
       .get("/notifications")
@@ -186,7 +187,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
               <Bell size={19} />
               {unread > 0 && <i>{unread > 99 ? "99+" : unread}</i>}
             </NavLink>
-            {user?.role === "SUPER_ADMIN" && (
+            {systemRole === "SUPER_ADMIN" && (
               <NavLink
                 className="topbar-icon relative grid place-items-center text-[#65807d]"
                 to="/change-password"
@@ -206,7 +207,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
                   {user?.firstname || user?.email?.split("@")[0]}
                 </strong>
                 <small className="text-[.63rem] text-[#8ca4a0]">
-                  {roleLabels[user?.role] || user?.role}
+                  {roleLabels[systemRole] || user?.role}
                 </small>
               </div>
               <button
