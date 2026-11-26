@@ -20,6 +20,7 @@ const navigation = [
   { section: "ADMINISTRATION", label: "Users & Management", path: "/users", icon: Users, roles: accessRoles, children: [
     ["View & Manage Users", "/users"], ["Create New Admin", "/users/create-admin"], ["User Roles & Permissions", "/users/roles"],
   ] },
+  { section: "ADMINISTRATION", label: "Service Activation", path: "/services", icon: Link2, roles: ["SUPER_ADMIN"] },
   { section: "WATER OPERATIONS", label: "Water Tanks", path: "/tanks", icon: Droplets, roles: accessRoles, serviceType: "water_tank", children: [
     ["Live Tank Levels", "/tanks/level"], ["Add New Tanker", "/tanks/new"], ["Tank History & Logs", "/tanks/history"], ["Tank Hardware Status", "/tanks/hardware"],
   ] },
@@ -47,7 +48,6 @@ const navigation = [
   { section: "SYSTEM", label: "Reports", path: "/reports", icon: History, roles: accessRoles },
   { section: "SYSTEM", label: "Audit Logs", path: "/audit-logs", icon: Activity, roles: ["SUPER_ADMIN", "ORGANIZATION_ADMIN"] },
   { section: "SYSTEM", label: "Settings", path: "/settings", icon: Settings, roles: accessRoles },
-  { section: "ADMINISTRATION", label: "Service Activation", path: "/services", icon: Link2, roles: ["SUPER_ADMIN"] },
   { section: "MY ACCOUNT", label: "My Services", path: "/services", icon: Link2, roles: ["OPERATOR"] },
 ];
 
