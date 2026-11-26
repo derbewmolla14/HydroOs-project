@@ -3,7 +3,7 @@ import { Device } from '../models/Device.js';
 import { Tank } from '../models/Tank.js';
 import { evaluateTelemetry } from './alertService.js';
 
-const readingFields = ['waterLevel', 'waterVolume', 'flowRate', 'temperature', 'ph', 'turbidity', 'electricalConductivity', 'batteryLevel'];
+const readingFields = ['waterLevel', 'waterVolume', 'flowRate', 'temperature', 'ph', 'turbidity', 'electricalConductivity', 'soilMoisture', 'batteryLevel'];
 
 export function validateTelemetryPayload(payload = {}) {
     const values = {};
@@ -13,7 +13,7 @@ export function validateTelemetryPayload(payload = {}) {
             continue;
         }
         const value = Number(payload[field]);
-        const invalid = !Number.isFinite(value) || value < 0 || (field === 'batteryLevel' && value > 100) || (field === 'ph' && value > 14);
+        const invalid = !Number.isFinite(value) || value < 0 || (field === 'batteryLevel' && value > 100) || (field === 'ph' && value > 14) || (field === 'soilMoisture' && value > 100);
         if (invalid) {
             const error = new Error(`Invalid ${field} reading.`);
             error.statusCode = 400;
