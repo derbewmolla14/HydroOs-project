@@ -46,7 +46,7 @@ export function requireServiceAccess(serviceType) {
         const user = req.user;
         const validSubscription = user.subscriptionStatus === 'active'
             && user.monthlyFeePaid === true
-            && (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+            && user.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
         if (!validSubscription) {
             return res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid monthly subscription is required to use this service.' });
         }
