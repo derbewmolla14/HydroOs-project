@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
+    firstName: String,
+    lastName: String,
+    phoneNumber: String,
+    // Legacy aliases retained for existing pages and older account records.
     firstname: String,
     lastname: String,
     username: String,
