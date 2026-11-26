@@ -84,7 +84,7 @@ router.post('/link', requireRoles('OPERATOR'), async (req, res, next) => {
             subscriptionStatus: 'active',
             subscriptionPlan: user.subscriptionPlan,
             monthlyFeePaid: true,
-            $and: [{ $or: [{ subscriptionExpiresAt: null }, { subscriptionExpiresAt: { $gt: now } }] }]
+            $and: [{ subscriptionExpiresAt: { $gt: now } }]
         };
         if (user.subscriptionPlan !== 'all') {
             userFilter.subscriptionPlan = 'individual';
