@@ -6,7 +6,7 @@ import { User } from '../models/User.js';
 import { hashToken } from './authService.js';
 
 export const deviceManagerRoles = ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'];
-export const deviceFields = ['identifier', 'name', 'deviceType', 'protocol', 'firmwareVersion', 'heartbeatIntervalSeconds', 'tankId', 'status', 'metadata'];
+export const deviceFields = ['identifier', 'name', 'deviceType', 'serviceType', 'protocol', 'firmwareVersion', 'heartbeatIntervalSeconds', 'tankId', 'status', 'metadata'];
 
 export function canManageDevices(user) {
     return deviceManagerRoles.includes(user?.role) && (user.role !== 'SUB_ADMIN' || (user.permissions || []).some((permission) => ['devices:manage', 'manage_devices', 'devices'].includes(permission)));
@@ -29,6 +29,7 @@ export async function validateDeviceInput(input, organizationId) {
     if (values.tankId !== undefined && values.tankId !== null && values.tankId !== '') {
         if (!mongoose.isValidObjectId(values.tankId) || !(await Tank.exists({ _id: values.tankId, organizationId, status: { $ne: 'deactivated' } }))) throw Object.assign(new Error('Tank is not valid for this organization.'), { statusCode: 400 });
     } else if (values.tankId === '') values.tankId = null;
+    if (values.serviceType !== undefined && !['water_tank', 'irrigation', 'soil_moisture', 'water_source', 'water_quality'].includes(values.serviceType)) throw Object.assign(new Error('Service type is invalid.'), { statusCode: 400 });
     if (values.heartbeatIntervalSeconds !== undefined && (!Number.isInteger(values.heartbeatIntervalSeconds) || values.heartbeatIntervalSeconds < 10 || values.heartbeatIntervalSeconds > 86400)) throw Object.assign(new Error('Heartbeat interval must be between 10 and 86400 seconds.'), { statusCode: 400 });
     if (values.name !== undefined && !values.name) throw Object.assign(new Error('Device name cannot be empty.'), { statusCode: 400 });
     return values;
