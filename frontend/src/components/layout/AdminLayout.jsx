@@ -1,13 +1,25 @@
 import { useEffect, useState } from "react";
 import {
+  Activity,
   Bell,
+  Building2,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
+  Cpu,
+  Droplets,
+  FlaskConical,
+  Gauge,
+  History,
+  Leaf,
   LogOut,
   Menu,
   Settings,
+  ShieldAlert,
   ShieldCheck,
+  Users,
+  Waves,
+  Radio,
   X,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
