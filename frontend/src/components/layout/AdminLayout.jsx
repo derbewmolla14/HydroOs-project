@@ -3,6 +3,7 @@ import {
   Bell,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
   Menu,
   Settings,
@@ -14,27 +15,32 @@ import { useAuth } from "../../auth/AuthContext";
 import { api } from "../../api";
 import { io } from "socket.io-client";
 
+const accessRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
 const navigation = [
-  ["Dashboard", "/dashboard", "⌂"],
-  ["Organizations", "/organizations", "◈", ["SUPER_ADMIN"]],
-  ["Users", "/users", "♙", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Water Tanks", "/tanks", "◉", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Irrigation Control", "/irrigation", "≈", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Soil Moisture", "/soil-moisture", "⌁", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Water Sources", "/water-sources", "◌", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Devices", "/devices", "▣", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Smart Alerts", "/alerts", "⚠", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Notifications", "/notifications", "♢", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  [
-    "Alert Settings",
-    "/alert-settings",
-    "⚙",
-    ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"],
-  ],
-  ["Schedule", "/schedule", "◷", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Reports", "/reports", "▤", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Audit Logs", "/audit-logs", "▥", ["SUPER_ADMIN", "ORGANIZATION_ADMIN"]],
-  ["Settings", "/settings", <Settings size={17} />, ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  { label: "Dashboard", path: "/dashboard", icon: "⌂" },
+  { label: "Organizations", path: "/organizations", icon: "◈", roles: ["SUPER_ADMIN"] },
+  { label: "Users", path: "/users", icon: "♙", roles: accessRoles },
+  { label: "Water Tanks", path: "/tanks", icon: "◉", roles: accessRoles, children: [
+    ["Water Level", "/tanks/level"], ["Tank Status", "/tanks/status"], ["Tank History", "/tanks/history"]
+  ] },
+  { label: "Irrigation Control", path: "/irrigation", icon: "≈", roles: accessRoles, children: [
+    ["Valve Status", "/irrigation/valves"], ["Schedule Management", "/irrigation/schedules"], ["Irrigation History", "/irrigation/history"]
+  ] },
+  { label: "Soil Moisture", path: "/soil-moisture", icon: "⌁", roles: accessRoles, children: [
+    ["Current Sensors", "/soil-moisture/sensors"], ["Threshold Settings", "/soil-moisture/thresholds"], ["Moisture History", "/soil-moisture/history"]
+  ] },
+  { label: "Water Sources", path: "/water-sources", icon: "◌", roles: accessRoles },
+  { label: "Water Quality", path: "/water-quality", icon: "◍", roles: accessRoles, children: [
+    ["Current Readings", "/water-quality"], ["Quality History", "/water-quality/history"]
+  ] },
+  { label: "Devices", path: "/devices", icon: "▣", roles: accessRoles },
+  { label: "Smart Alerts", path: "/alerts", icon: "⚠", roles: accessRoles },
+  { label: "Notifications", path: "/notifications", icon: "♢", roles: accessRoles },
+  { label: "Alert Settings", path: "/alert-settings", icon: "⚙", roles: accessRoles },
+  { label: "Schedule", path: "/schedule", icon: "◷", roles: accessRoles },
+  { label: "Reports", path: "/reports", icon: "▤", roles: accessRoles },
+  { label: "Audit Logs", path: "/audit-logs", icon: "▥", roles: ["SUPER_ADMIN", "ORGANIZATION_ADMIN"] },
+  { label: "Settings", path: "/settings", icon: <Settings size={17} />, roles: accessRoles },
 ];
 
 const roleLabels = {
@@ -50,13 +56,12 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [expanded, setExpanded] = useState({});
   const systemRole = user?.systemRole || user?.role;
   const dashboardPath = systemRole === "OPERATOR" || systemRole === "user" ? "/home" : "/dashboard";
   const allowedNavigation = navigation
-    .map(([label, path, icon, roles], index) =>
-      index === 0 ? [label, dashboardPath, icon, roles] : [label, path, icon, roles],
-    )
-    .filter(([, , , roles]) => !roles || roles.includes(systemRole));
+    .map((item, index) => index === 0 ? { ...item, path: dashboardPath } : item)
+    .filter((item) => !item.roles || item.roles.includes(systemRole));
   useEffect(() => {
     api
       .get("/notifications")
@@ -108,23 +113,31 @@ export function AdminLayout({ children, title = "Dashboard" }) {
           {!collapsed && "WORKSPACE"}
         </div>
         <nav className="admin-nav grid gap-[3px] px-[11px]">
-          {allowedNavigation.map(([label, path, icon]) => (
-            <NavLink
-              key={path}
-              to={path}
-              end={path === "/dashboard"}
-              onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                `admin-nav-link flex items-center gap-[13px] rounded-lg px-[13px] py-[11px] text-[.78rem] font-semibold text-[#a7ccc2] transition-colors${isActive ? " active bg-[#a2e8cc] text-[#073a37]" : ""}`
-              }
-              title={collapsed ? label : undefined}
-            >
-              <span className="nav-glyph grid w-[18px] min-w-[18px] place-items-center text-[1.1rem]">
-                {icon}
-              </span>
-              {!collapsed && <span>{label}</span>}
-            </NavLink>
-          ))}
+          {allowedNavigation.map((item) => {
+            const activeChild = item.children?.some(([, childPath]) => window.location.pathname === childPath);
+            const isExpanded = Boolean(expanded[item.path] || activeChild);
+            return (
+              <div key={item.path}>
+                <div className="flex items-center">
+                  <NavLink to={item.path} end={item.path === "/dashboard"}
+                    onClick={() => { setMobileOpen(false); if (item.children) setExpanded((current) => ({ ...current, [item.path]: true })); }}
+                    className={({ isActive }) => `admin-nav-link flex min-w-0 flex-1 items-center gap-[13px] rounded-lg px-[13px] py-[11px] text-[.78rem] font-semibold text-[#a7ccc2] transition-colors${isActive || activeChild ? " active bg-[#a2e8cc] text-[#073a37]" : ""}`}
+                    title={collapsed ? item.label : undefined}>
+                    <span className="nav-glyph grid w-[18px] min-w-[18px] place-items-center text-[1.1rem]">{item.icon}</span>
+                    {!collapsed && <span>{item.label}</span>}
+                  </NavLink>
+                  {item.children && !collapsed && <button type="button" aria-label={`Toggle ${item.label} submenu`}
+                    aria-expanded={isExpanded} onClick={() => setExpanded((current) => ({ ...current, [item.path]: !current[item.path] }))}
+                    className="mr-2 rounded p-1 text-[#9bc7bb] hover:bg-white/10">{isExpanded ? <ChevronDown size={15}/> : <ChevronRight size={15}/>}</button>}
+                </div>
+                {item.children && !collapsed && isExpanded && <div className="ml-[42px] mt-1 mb-2 grid gap-1 border-l border-[#47766c] pl-3">
+                  {item.children.map(([childLabel, childPath]) => <NavLink key={childPath} to={childPath}
+                    onClick={() => setMobileOpen(false)}
+                    className={({isActive}) => `rounded-md px-2 py-2 text-[.7rem] font-medium ${isActive ? "bg-[#14554b] text-[#a2e8cc]" : "text-[#8fb9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
+                </div>}
+              </div>
+            );
+          })}
         </nav>
         <div className="sidebar-footer mt-auto px-[13px] pb-[22px] pt-4">
           {!collapsed && (

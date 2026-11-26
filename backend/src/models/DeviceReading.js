@@ -12,6 +12,7 @@ const deviceReadingSchema = new mongoose.Schema({
     ph: { type: Number, min: 0, max: 14, default: null },
     turbidity: { type: Number, min: 0, default: null },
     electricalConductivity: { type: Number, min: 0, default: null },
+    soilMoisture: { type: Number, min: 0, max: 100, default: null },
     batteryLevel: { type: Number, min: 0, max: 100, default: null },
     payload: { type: mongoose.Schema.Types.Mixed, default: {} }
 }, { timestamps: true });

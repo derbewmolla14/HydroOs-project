@@ -79,9 +79,9 @@ router.get('/history', async (req, res, next) => {
         let previous = null;
         for (const reading of readings) {
             const key = bucketDate(reading.measuredAt, granularity).toISOString();
-            const bucket = buckets.get(key) || { timestamp: key, count: 0, waterLevel: [], waterVolume: [], flowRate: [], temperature: [], ph: [], turbidity: [], electricalConductivity: [], batteryLevel: [], consumptionLiters: 0 };
+            const bucket = buckets.get(key) || { timestamp: key, count: 0, waterLevel: [], waterVolume: [], flowRate: [], temperature: [], ph: [], turbidity: [], electricalConductivity: [], soilMoisture: [], batteryLevel: [], consumptionLiters: 0 };
             bucket.count += 1;
-            for (const field of ['waterLevel', 'waterVolume', 'flowRate', 'temperature', 'ph', 'turbidity', 'electricalConductivity', 'batteryLevel']) if (reading[field] !== null && reading[field] !== undefined) bucket[field].push(reading[field]);
+            for (const field of ['waterLevel', 'waterVolume', 'flowRate', 'temperature', 'ph', 'turbidity', 'electricalConductivity', 'soilMoisture', 'batteryLevel']) if (reading[field] !== null && reading[field] !== undefined) bucket[field].push(reading[field]);
             if (previous && reading.tankId?.toString() === previous.tankId?.toString() && reading.deviceId?.toString() === previous.deviceId?.toString()) {
                 const hours = (new Date(reading.measuredAt).getTime() - new Date(previous.measuredAt).getTime()) / 3600000;
                 const flow = Number(previous.flowRate || reading.flowRate || 0);
