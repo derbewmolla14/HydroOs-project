@@ -18,11 +18,11 @@ const navigation = [
   ["Dashboard", "/dashboard", "⌂"],
   ["Organizations", "/organizations", "◈", ["SUPER_ADMIN"]],
   ["Users", "/users", "♙", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Water Tanks", "/tanks", "◉"],
-  ["Irrigation Control", "/irrigation", "≈"],
-  ["Soil Moisture", "/soil-moisture", "⌁"],
-  ["Water Sources", "/water-sources", "◌"],
-  ["Devices", "/devices", "▣"],
+  ["Water Tanks", "/tanks", "◉", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Irrigation Control", "/irrigation", "≈", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Soil Moisture", "/soil-moisture", "⌁", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Water Sources", "/water-sources", "◌", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Devices", "/devices", "▣", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
   ["Smart Alerts", "/alerts", "⚠", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
   ["Notifications", "/notifications", "♢", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
   [
@@ -31,10 +31,10 @@ const navigation = [
     "⚙",
     ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"],
   ],
-  ["Schedule", "/schedule", "◷"],
-  ["Reports", "/reports", "▤"],
-  ["Audit Logs", "/audit-logs", "▥"],
-  ["Settings", "/settings", <Settings size={17} />],
+  ["Schedule", "/schedule", "◷", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Reports", "/reports", "▤", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Audit Logs", "/audit-logs", "▥", ["SUPER_ADMIN", "ORGANIZATION_ADMIN"]],
+  ["Settings", "/settings", <Settings size={17} />, ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
 ];
 
 const roleLabels = {
