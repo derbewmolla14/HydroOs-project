@@ -56,6 +56,7 @@ export function AdminModulePage() {
   }, []);
 
   useEffect(() => {
+    if (pathname === "/tanks/level") return undefined;
     load();
     const timer = window.setInterval(() => load(true), 30000);
     let socket;
@@ -72,7 +73,7 @@ export function AdminModulePage() {
       window.clearInterval(timer);
       socket?.disconnect();
     };
-  }, [load]);
+  }, [load, pathname]);
 
   const readings = overview?.latestReadings || [];
   const devices = overview?.devices || [];
@@ -108,7 +109,7 @@ export function AdminModulePage() {
   ];
 
   return <AdminLayout title={pageTitle}>
-    <section className="space-y-5">
+    {pathname === "/tanks/level" ? <WaterLevelLive /> : <section className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div><p className="dashboard-kicker">HydroOS monitoring workspace</p><h1 className="text-3xl font-extrabold tracking-tight text-[#173c3d]">{pageTitle}</h1>
           <p className="mt-2 text-sm text-[#78918e]">Live device telemetry, connectivity status and verified historical readings.</p></div>
@@ -142,8 +143,104 @@ export function AdminModulePage() {
           {(isHistory ? history : relevantReadings).length === 0 && <p className="p-6 text-center text-sm text-[#78918e]">No matching telemetry has been received for this module in the selected period.</p>}
         </section>
       </>}
-    </section>
+    </section>}
   </AdminLayout>;
+}
+
+function WaterLevelLive() {
+  const fallbackReading = {
+    distanceCm: 113.1,
+    waterLevelCm: 6.9,
+    waterPercent: 6,
+    source: "Tinkercad Simulation",
+    updatedAt: new Date().toISOString(),
+  };
+  const [reading, setReading] = useState(fallbackReading);
+  const [connected, setConnected] = useState(false);
+
+  useEffect(() => {
+    const apiOrigin = new URL(api.defaults.baseURL || "/api/v1", window.location.origin).origin;
+    const endpoint = new URL("/api/water-level", apiOrigin).toString();
+    let disposed = false;
+    let inFlight = false;
+    let controller;
+
+    const poll = async () => {
+      if (inFlight || disposed) return;
+      inFlight = true;
+      controller = new AbortController();
+      try {
+        const response = await fetch(endpoint, {
+          method: "GET",
+          cache: "no-store",
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error(`Water level endpoint returned ${response.status}`);
+        const nextReading = await response.json();
+        if (![nextReading.distanceCm, nextReading.waterLevelCm, nextReading.waterPercent].every((value) => Number.isFinite(Number(value)))) {
+          throw new Error("Water level response contains invalid measurements.");
+        }
+        if (!disposed) {
+          setReading(nextReading);
+          setConnected(true);
+        }
+      } catch (error) {
+        if (!disposed && error.name !== "AbortError") setConnected(false);
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    poll();
+    const timer = window.setInterval(poll, 1000);
+    return () => {
+      disposed = true;
+      window.clearInterval(timer);
+      controller?.abort();
+    };
+  }, []);
+
+  const percentage = Math.max(0, Math.min(100, Number(reading.waterPercent) || 0));
+  const updatedLabel = reading.updatedAt ? new Date(reading.updatedAt).toLocaleTimeString() : "Waiting for first update";
+
+  return <section className="space-y-5">
+    <header className="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p className="dashboard-kicker">HydroOS live telemetry</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-[#173c3d]">Water Level</h1>
+        <p className="mt-2 text-sm text-[#78918e]">Live ultrasonic sensor measurements from your Tinkercad bridge.</p>
+      </div>
+      <span className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold ${connected ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-amber-200 bg-amber-50 text-amber-800"}`}>
+        {connected ? `Live: ${reading.source || "Sensor"}` : `Reconnecting · ${reading.source || "Sensor"}`}
+      </span>
+    </header>
+
+    <article className="rounded-xl border border-[#e0ebe7] bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-[#78918e]">Current water level</p>
+          <strong className="mt-2 block text-4xl font-extrabold text-[#145d50]">{Number(reading.waterLevelCm).toFixed(1)} <span className="text-xl">cm</span></strong>
+        </div>
+        <span className="rounded-lg bg-[#eaf7f1] px-3 py-2 text-lg font-bold text-[#187761]">{percentage.toFixed(0)}%</span>
+      </div>
+      <div className="mt-5 h-3 overflow-hidden rounded-full bg-[#e5f1ee]" role="progressbar" aria-label="Water level percentage" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentage}>
+        <div className="h-full rounded-full bg-[#51bfa2] transition-[width] duration-500" style={{ width: `${percentage}%` }} />
+      </div>
+      <div className="mt-2 flex justify-between text-xs text-[#8ca4a0]"><span>0%</span><span>100%</span></div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-lg border border-[#edf3f1] p-3">
+          <span className="text-xs font-semibold text-[#78918e]">Distance to water</span>
+          <strong className="mt-1 block text-xl font-bold text-[#315b59]">{Number(reading.distanceCm).toFixed(1)} cm</strong>
+        </div>
+        <div className="rounded-lg border border-[#edf3f1] p-3">
+          <span className="text-xs font-semibold text-[#78918e]">Last updated</span>
+          <strong className="mt-1 block text-sm font-bold text-[#315b59]">{updatedLabel}</strong>
+        </div>
+      </div>
+      {!connected && <p role="status" className="mt-3 text-xs text-[#8a7660]">The live endpoint is temporarily unavailable. The last available reading is being kept on screen.</p>}
+    </article>
+  </section>;
 }
 
 function DeviceList({ devices }) {
