@@ -76,7 +76,8 @@ export function AdminLayout({ children, title = "Dashboard" }) {
       if (systemRole === "OPERATOR") {
         if (item.label === "Dashboard" || item.label === "My Services") return true;
         if (!item.serviceType || !subscriptionCurrent) return false;
-        return user?.subscriptionPlan === "all" || (user?.allowedServices || []).includes(item.serviceType);
+        const allowedServices = user?.allowedServices || [];
+        return allowedServices.includes(item.serviceType) || (user?.subscriptionPlan === "all" && allowedServices.length === 0);
       }
       return !item.roles || item.roles.includes(systemRole);
     })
