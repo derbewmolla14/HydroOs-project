@@ -30,6 +30,7 @@ export function createApp(io) {
     app.set('trust proxy', 1);
     // Standalone Tinkercad bridge endpoint: public wildcard CORS, isolated from authenticated API CORS.
     app.use('/api/water-level', waterLevelRoutes);
+    app.use('/api/v1/water-level', waterLevelRoutes);
     const corsOptions = {
         origin(origin, callback) {
             if (!origin || env.clientOrigins.includes(origin)) return callback(null, true);
