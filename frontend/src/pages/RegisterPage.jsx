@@ -4,10 +4,9 @@ import { useAuth } from "../auth/AuthContext";
 import { AuthCard, AuthShell } from "../components/AuthLayout";
 import { useLanguage } from "../i18n/LanguageContext";
 
-const adminRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
-
-function dashboardForRole(role) {
-  return adminRoles.includes(role) ? "/dashboard" : "/home";
+function dashboardForRole(user) {
+  const role = user.systemRole || user.role;
+  return role === "OPERATOR" || role === "user" ? "/home" : "/dashboard";
 }
 
 export function RegisterPage() {
@@ -15,13 +14,13 @@ export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    firstname: "",
-    lastname: "",
+    firstName: "",
+    lastName: "",
     email: "",
+    phoneNumber: "",
     password: "",
     role: "user",
     inviteCode: "",
-    organizationName: "",
   });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -33,18 +32,24 @@ export function RegisterPage() {
   async function submit(event) {
     event.preventDefault();
     setError("");
-    if (!form.firstname || !form.email || !form.password)
-      return setError(t.required);
-    if (form.password.length < 8) return setError(t.passwordLength);
-    if (form.role === "admin" && !form.inviteCode.trim())
-      return setError("Admin Invite Code is required for admin registration.");
-    if (form.role === "admin" && !form.organizationName.trim())
-      return setError("Organization name is required for admin registration.");
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() ||
+        !form.phoneNumber.trim() || !form.password) {
+      setError("Please complete all required fields.");
+      return;
+    }
+    if (form.password.length < 8) {
+      setError("Password must contain at least 8 characters.");
+      return;
+    }
+    if (form.role === "admin" && !form.inviteCode.trim()) {
+      setError("Invitation Code is required for Admin registration.");
+      return;
+    }
 
     setBusy(true);
     try {
       const registeredUser = await register(form);
-      navigate(dashboardForRole(registeredUser.role), { replace: true });
+      navigate(dashboardForRole(registeredUser), { replace: true });
     } catch (requestError) {
       setError(requestError.response?.data?.message || t.genericError);
     } finally {
@@ -54,97 +59,55 @@ export function RegisterPage() {
 
   return (
     <AuthShell compact>
-      <AuthCard title={t.registerTitle} subtitle={t.registerSubtitle}>
+      <AuthCard title="Create Account" subtitle="Create your HydroOS account">
         <form className="auth-form" onSubmit={submit}>
-          {error && (
-            <p className="form-message error" role="alert">
-              {error}
-            </p>
-          )}
+          {error && <p className="form-message error" role="alert">{error}</p>}
           <div className="form-grid">
             <label>
-              {t.firstName}
-              <input
-                required
-                autoComplete="given-name"
-                value={form.firstname}
-                onChange={(event) => update("firstname", event.target.value)}
-              />
+              First Name
+              <input required autoComplete="given-name" value={form.firstName}
+                onChange={(event) => update("firstName", event.target.value)} />
             </label>
             <label>
-              {t.lastName}
-              <input
-                autoComplete="family-name"
-                value={form.lastname}
-                onChange={(event) => update("lastname", event.target.value)}
-              />
+              Last Name
+              <input required autoComplete="family-name" value={form.lastName}
+                onChange={(event) => update("lastName", event.target.value)} />
             </label>
           </div>
           <label>
-            {t.email}
-            <input
-              type="email"
-              required
-              autoComplete="email"
-              value={form.email}
-              onChange={(event) => update("email", event.target.value)}
-            />
+            Email
+            <input type="email" required autoComplete="email" value={form.email}
+              onChange={(event) => update("email", event.target.value)} />
           </label>
           <label>
-            {t.password}
-            <input
-              type="password"
-              minLength="8"
-              required
-              autoComplete="new-password"
-              value={form.password}
-              onChange={(event) => update("password", event.target.value)}
-            />
+            Phone Number
+            <input type="tel" required autoComplete="tel" value={form.phoneNumber}
+              onChange={(event) => update("phoneNumber", event.target.value)} />
           </label>
           <label>
-            Account role
-            <select
-              value={form.role}
-              onChange={(event) => update("role", event.target.value)}
-              required
-            >
+            Password
+            <input type="password" minLength="8" required autoComplete="new-password"
+              value={form.password} onChange={(event) => update("password", event.target.value)} />
+          </label>
+          <label>
+            Role
+            <select value={form.role} onChange={(event) => update("role", event.target.value)} required>
               <option value="user">User</option>
               <option value="admin">Admin</option>
             </select>
           </label>
           {form.role === "admin" && (
-            <>
-              <label>
-                Organization name
-                <input
-                  required
-                  value={form.organizationName}
-                  onChange={(event) => update("organizationName", event.target.value)}
-                  placeholder="Enter your organization name"
-                />
-              </label>
-              <label>
-                Admin Invite Code
-                <input
-                  type="password"
-                  required
-                  autoComplete="off"
-                  value={form.inviteCode}
-                  onChange={(event) => update("inviteCode", event.target.value)}
-                  placeholder="Enter your administrator invite code"
-                />
-              </label>
-            </>
+            <label>
+              Invitation Code
+              <input type="password" required autoComplete="off" value={form.inviteCode}
+                onChange={(event) => update("inviteCode", event.target.value)}
+                placeholder="Enter your Admin invitation code" />
+            </label>
           )}
-          <p className="helper-text">
-            Admin registration requires an invite code issued by a HydroOS administrator.
-          </p>
           <button className="primary-button" disabled={busy}>
-            {busy ? "Creating account…" : t.register}
+            {busy ? "Creating account…" : "Create Account"}
           </button>
-          <Link className="form-link centered" to="/login">
-            {t.backToLogin}
-          </Link>
+          <Link className="form-link centered" to="/login">Already have an account? Login</Link>
         </form>
       </AuthCard>
     </AuthShell>
