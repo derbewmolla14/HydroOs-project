@@ -25,7 +25,7 @@ router.use(express.json({ limit: '16kb' }));
 
 function parseSerialLine(serialLine) {
     const match = String(serialLine).match(
-        /Distance\\s+to\\s+Water\\s*:\\s*([0-9]+(?:\\.[0-9]+)?)\\s*cm[\\s\\S]*?Water\\s+Level\\s*:\\s*([0-9]+(?:\\.[0-9]+)?)\\s*cm\\s*\\(\\s*([0-9]+(?:\\.[0-9]+)?)\\s*%\\s*\\)/i
+        /Distance\s+to\s+Water\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*cm[\s\S]*?Water\s+Level\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*cm\s*\(\s*([0-9]+(?:\.[0-9]+)?)\s*%\s*\)/i
     );
     if (!match) return null;
     return {
