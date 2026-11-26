@@ -109,6 +109,15 @@ export function ServiceManagementPage() {
     } catch (err) { setError(err.response?.data?.message || "Service assignment could not be updated."); }
   }
 
+  async function rotateServicePassword(service) {
+    setError(""); setSuccess(""); setCredentials(null);
+    try {
+      const { data } = await api.post(`/services/admin/devices/${service.id}/rotate-password`);
+      setCredentials(data.credentials);
+      setSuccess(data.message || "Service password rotated.");
+    } catch (err) { setError(err.response?.data?.message || "Service password could not be rotated."); }
+  }
+
   async function linkService(event) {
     event.preventDefault(); setSaving(true); setError(""); setSuccess("");
     try {
@@ -180,7 +189,7 @@ export function ServiceManagementPage() {
         </section>
         <section className="rounded-xl border border-[#e0ebe7] bg-white p-5">
           <h2 className="mb-4 font-bold text-[#214f4b]">Service credential registry</h2>
-          <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="border-b text-xs text-[#78918e]"><tr><th className="p-2">Service ID</th><th className="p-2">Module</th><th className="p-2">Assigned user</th><th className="p-2">Status</th><th className="p-2">Assign / revoke</th><th className="p-2">Action</th></tr></thead><tbody>{services.map((item) => <tr key={item.id} className="border-b border-[#edf3f1]"><td className="p-2 font-semibold">{item.serviceId}</td><td className="p-2">{serviceTypes.find(([value]) => value === item.serviceType)?.[1] || item.serviceType}</td><td className="p-2">{item.assignedToUser?.name || item.assignedToUser?.email || "Unassigned"}</td><td className="p-2">{item.isActive ? "Active" : "Inactive"}</td><td className="p-2"><select aria-label={`Assign ${item.serviceId}`} value={item.assignedToUser?.id || ""} onChange={(e) => assignService(item, e.target.value)} className="max-w-[190px] rounded-md border border-[#dce9e5] p-1.5 text-xs"><option value="">Unassigned</option>{users.map((person) => <option key={person.id} value={person.id}>{person.name || person.email}</option>)}</select></td><td className="p-2"><button onClick={() => toggleDevice(item)} className="rounded-md border border-[#dce9e5] px-2 py-1 text-xs font-semibold">{item.isActive ? "Deactivate" : "Activate"}</button></td></tr>)}</tbody></table>{!services.length && <p className="py-5 text-sm text-[#78918e]">No service credentials created yet.</p>}</div>
+          <div className="overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="border-b text-xs text-[#78918e]"><tr><th className="p-2">Service ID</th><th className="p-2">Module</th><th className="p-2">Assigned user</th><th className="p-2">Status</th><th className="p-2">Assign / revoke</th><th className="p-2">Action</th></tr></thead><tbody>{services.map((item) => <tr key={item.id} className="border-b border-[#edf3f1]"><td className="p-2 font-semibold">{item.serviceId}</td><td className="p-2">{serviceTypes.find(([value]) => value === item.serviceType)?.[1] || item.serviceType}</td><td className="p-2">{item.assignedToUser?.name || item.assignedToUser?.email || "Unassigned"}</td><td className="p-2">{item.isActive ? "Active" : "Inactive"}</td><td className="p-2"><select aria-label={`Assign ${item.serviceId}`} value={item.assignedToUser?.id || ""} onChange={(e) => assignService(item, e.target.value)} className="max-w-[190px] rounded-md border border-[#dce9e5] p-1.5 text-xs"><option value="">Unassigned</option>{users.map((person) => <option key={person.id} value={person.id}>{person.name || person.email}</option>)}</select></td><td className="p-2"><div className="flex gap-1"><button onClick={() => toggleDevice(item)} className="rounded-md border border-[#dce9e5] px-2 py-1 text-xs font-semibold">{item.isActive ? "Deactivate" : "Activate"}</button><button onClick={() => rotateServicePassword(item)} className="rounded-md border border-[#dce9e5] px-2 py-1 text-xs font-semibold">Reset password</button></div></td></tr>)}</tbody></table>{!services.length && <p className="py-5 text-sm text-[#78918e]">No service credentials created yet.</p>}</div>
         </section>
       </> : <>
         <section className="grid gap-4 md:grid-cols-3">
