@@ -503,7 +503,7 @@ export function DashboardPage() {
               ))}
             </div>
           </article>
-        </div>
+        </div>}
       </section>
     </AdminLayout>
   );
