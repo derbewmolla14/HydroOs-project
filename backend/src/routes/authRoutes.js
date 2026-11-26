@@ -1,12 +1,13 @@
 import crypto from 'node:crypto';
 import express from 'express';
+import { env } from '../config/env.js';
 import { User } from '../models/User.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { recordAudit } from '../services/auditService.js';
 import { hashPassword, hashToken, issueTokens, setAuthCookies, clearAuthCookies, verifyPassword, verifyRefreshToken } from '../services/authService.js';
 import { authenticate } from '../middleware/auth.js';
 import { PasswordOtp } from '../models/PasswordOtp.js';
-import { sendPasswordOtp } from '../services/emailService.js';
+import { sendPasswordOtp, sendPasswordResetEmail } from '../services/emailService.js';
 
 const router = express.Router();
 const publicUser = (user) => ({
@@ -139,13 +140,37 @@ router.post('/password-change/confirm', authenticate, async (req, res, next) => 
 
 router.post('/forgot-password', async (req, res, next) => {
     try {
-        const user = await User.findOne({ email: req.body.email?.toLowerCase() });
+        const email = typeof req.body.email === 'string'
+            ? req.body.email.trim().toLowerCase()
+            : '';
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'A valid email address is required.' });
+        }
+
+        const user = await User.findOne({ email });
+
         if (user) {
             const rawToken = crypto.randomBytes(32).toString('hex');
             user.passwordResetTokenHash = hashToken(rawToken);
             user.passwordResetExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
             await user.save();
+
+            const resetUrl = new URL('/reset-password', env.clientOrigin);
+            resetUrl.searchParams.set('email', user.email);
+            resetUrl.searchParams.set('token', rawToken);
+
+            try {
+                await sendPasswordResetEmail({ to: user.email, resetUrl: resetUrl.toString() });
+            } catch (emailError) {
+                user.passwordResetTokenHash = undefined;
+                user.passwordResetExpiresAt = undefined;
+                await user.save();
+                throw emailError;
+            }
         }
+
+        // Keep the response identical whether or not the account exists.
         res.json({ success: true, message: 'If the account exists, password reset instructions will be sent.' });
     } catch (error) {
         next(error);
