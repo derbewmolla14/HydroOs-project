@@ -19,6 +19,9 @@ const publicUser = (user) => {
         firstName: user.firstName || user.firstname,
         lastName: user.lastName || user.lastname,
         phoneNumber: user.phoneNumber || user.phone,
+        firstname: user.firstName || user.firstname,
+        lastname: user.lastName || user.lastname,
+        phone: user.phoneNumber || user.phone,
         // Keep the internal RBAC role separately for frontend authorization.
         role: systemRole === 'OPERATOR' ? 'user' : 'admin',
         systemRole,
