@@ -124,7 +124,16 @@ router.patch('/admin/devices/:id', manager, async (req, res, next) => {
         if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid service record.' });
         const service = await ServiceDevice.findById(req.params.id);
         if (!service) return res.status(404).json({ success: false, message: 'Service record not found.' });
-        if (typeof req.body.isActive === 'boolean') service.isActive = req.body.isActive;
+        if (typeof req.body.isActive === 'boolean') {
+            service.isActive = req.body.isActive;
+            if (service.assignedToUser) {
+                if (service.isActive) await User.updateOne({ _id: service.assignedToUser }, { $addToSet: { allowedServices: service.serviceType } });
+                else {
+                    const otherActive = await ServiceDevice.exists({ _id: { $ne: service._id }, assignedToUser: service.assignedToUser, serviceType: service.serviceType, isActive: true });
+                    if (!otherActive) await User.updateOne({ _id: service.assignedToUser }, { $pull: { allowedServices: service.serviceType } });
+                }
+            }
+        }
         if (Object.prototype.hasOwnProperty.call(req.body, 'assignedToUser')) {
             const oldUserId = service.assignedToUser?.toString();
             const nextUser = req.body.assignedToUser ? await User.findById(req.body.assignedToUser) : null;
@@ -188,7 +197,17 @@ router.patch('/admin/users/:userId/subscription', manager, async (req, res, next
             if (expiry && Number.isNaN(expiry.getTime())) return res.status(400).json({ success: false, message: 'Invalid subscription expiry date.' });
             user.subscriptionExpiresAt = expiry;
         }
-        if (allowedServices !== undefined) user.allowedServices = [...new Set(allowedServices)];
+        if (allowedServices !== undefined) {
+            const nextAllowed = [...new Set(allowedServices)];
+            const revoked = (user.allowedServices || []).filter((serviceType) => !nextAllowed.includes(serviceType));
+            if (revoked.length) {
+                await ServiceDevice.updateMany(
+                    { assignedToUser: user._id, serviceType: { $in: revoked } },
+                    { $set: { assignedToUser: null, isActive: false, linkedAt: null } }
+                );
+            }
+            user.allowedServices = nextAllowed;
+        }
         if (user.subscriptionPlan === 'all') user.allowedServices = [...SERVICE_TYPES];
         await user.save();
         await recordAudit({ actorUserId: req.user.id, action: 'USER_SUBSCRIPTION_UPDATED', resourceType: 'User', resourceId: user.id, metadata: { subscriptionStatus: user.subscriptionStatus, subscriptionPlan: user.subscriptionPlan, monthlyFeePaid: user.monthlyFeePaid, allowedServices: user.allowedServices }, ipAddress: req.ip });
