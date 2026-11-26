@@ -36,7 +36,8 @@ const blank = {
 };
 
 export function DeviceManagementPage() {
-  const { user } = useAuth();\n  const location = useLocation();
+  const { user } = useAuth();
+  const location = useLocation();
   const canManage =
     roles.includes((user?.systemRole || user?.role)) &&
     ((user?.systemRole || user?.role) !== "SUB_ADMIN" ||
