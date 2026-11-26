@@ -353,10 +353,10 @@ export function DashboardPage() {
             {history.error}
           </div>
         )}
-        {history.loading ? (
+        {!isOperator && (history.loading ? (
           <div className="module-empty">Loading historical telemetry…</div>
         ) : (
-          {!isOperator && <div className="monitoring-chart-grid">
+          <div className="monitoring-chart-grid">
             <article className="chart-card">
               <div className="chart-heading">
                 <div>
@@ -427,7 +427,8 @@ export function DashboardPage() {
                 label="pH"
               />
             </article>
-          </div>}
+          </div>
+        ))}
 
         {hasTankAccess && <div className="monitoring-lower-grid">
           <article className="chart-card">
