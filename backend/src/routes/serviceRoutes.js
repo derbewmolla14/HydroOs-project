@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import { authenticate, requireRoles } from '../middleware/auth.js';
 import { ServiceDevice, SERVICE_TYPES } from '../models/ServiceDevice.js';
 import { User } from '../models/User.js';
-import { hashToken } from '../services/authService.js';
+import { hashPassword, verifyPassword } from '../services/authService.js';
 import { recordAudit } from '../services/auditService.js';
 
 const router = express.Router();
@@ -54,7 +54,7 @@ router.post('/link', async (req, res, next) => {
         }
 
         const service = await ServiceDevice.findOne({ serviceId }).select('+servicePasswordHash');
-        if (!service || !service.isActive || hashToken(servicePassword) !== service.servicePasswordHash) {
+        if (!service || !service.isActive || !(await verifyPassword(servicePassword, service.servicePasswordHash))) {
             return res.status(400).json({ success: false, message: 'Invalid Service ID or Service Password.' });
         }
         if (service.assignedToUser && service.assignedToUser.toString() !== user.id) {
@@ -103,7 +103,7 @@ router.post('/admin/devices', manager, async (req, res, next) => {
             }
         }
         const service = await ServiceDevice.create({
-            serviceId, serviceType, servicePasswordHash: hashToken(password),
+            serviceId, serviceType, servicePasswordHash: await hashPassword(password),
             assignedToUser: assignedUser?._id || null, createdBy: req.user.id,
             linkedAt: assignedUser ? new Date() : null
         });
