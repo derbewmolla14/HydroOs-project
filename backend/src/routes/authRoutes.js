@@ -19,25 +19,68 @@ const publicUser = (user) => ({
     permissions: user.permissions || []
 });
 
+function hasValidAdminInviteCode(providedCode) {
+    const expectedCode = process.env.ADMIN_INVITE_CODE?.trim();
+    const candidate = typeof providedCode === 'string' ? providedCode.trim() : '';
+    if (!expectedCode || !candidate) return false;
+    const expected = Buffer.from(expectedCode, 'utf8');
+    const provided = Buffer.from(candidate, 'utf8');
+    return expected.length === provided.length && crypto.timingSafeEqual(expected, provided);
+}
+
 router.post('/register', async (req, res, next) => {
     try {
-        const { email, password, firstname, lastname, username, phone } = req.body;
+        const { email, password, firstname, lastname, username, phone, inviteCode } = req.body;
+        const requestedRole = String(req.body.role || 'user').trim().toLowerCase();
         if (!email || !password || password.length < 8 || !firstname) {
             return res.status(400).json({ success: false, message: 'Email, first name, and a password of at least 8 characters are required.' });
         }
-        const exists = await User.exists({ email: email.toLowerCase() });
+        if (!['user', 'admin'].includes(requestedRole)) {
+            return res.status(400).json({ success: false, message: 'Role must be either user or admin.' });
+        }
+
+        let assignedRole = 'OPERATOR';
+        if (requestedRole === 'admin') {
+            if (!process.env.ADMIN_INVITE_CODE?.trim()) {
+                return res.status(503).json({ success: false, message: 'Admin registration is not configured. Contact the HydroOS administrator.' });
+            }
+            if (!hasValidAdminInviteCode(inviteCode)) {
+                return res.status(403).json({ success: false, message: 'Invalid Admin Invite Code.' });
+            }
+            assignedRole = 'ORGANIZATION_ADMIN';
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        const exists = await User.exists({ email: normalizedEmail });
         if (exists) return res.status(409).json({ success: false, message: 'Email is already registered.' });
-        const user = await User.create({ email: email.toLowerCase(), passwordHash: await hashPassword(password), firstname, lastname, username, phone, role: 'OPERATOR', status: 'active' });
+
+        const user = await User.create({
+            email: normalizedEmail,
+            passwordHash: await hashPassword(password),
+            firstname: firstname.trim(),
+            lastname: lastname?.trim(),
+            username,
+            phone,
+            role: assignedRole,
+            status: 'active'
+        });
+        const tokens = issueTokens(user);
+        user.refreshTokenHash = hashToken(tokens.refreshToken);
+        user.lastLoginAt = new Date();
+        user.lastActivityAt = new Date();
+        await user.save();
+        setAuthCookies(res, tokens);
         await recordAudit({ actorUserId: user.id, action: 'USER_REGISTERED', resourceType: 'User', resourceId: user.id, ipAddress: req.ip });
-        res.status(201).json({ success: true, user: publicUser(user) });
+        res.status(201).json({ success: true, message: 'Registration successful.', user: publicUser(user) });
     } catch (error) {
+        if (error?.code === 11000) return res.status(409).json({ success: false, message: 'Email is already registered.' });
         next(error);
     }
 });
 
 router.post('/login', async (req, res, next) => {
     try {
-        const email = req.body.email?.toLowerCase();
+        const email = req.body.email?.trim().toLowerCase();
         const user = await User.findOne({ email }).select('+passwordHash +password +refreshTokenHash');
         if (!user || user.status !== 'active') return res.status(401).json({ success: false, message: 'Invalid credentials.' });
         const valid = user.passwordHash
@@ -120,7 +163,7 @@ router.post('/password-change/request', authenticate, async (req, res, next) => 
 
 router.post('/password-change/confirm', authenticate, async (req, res, next) => {
     try {
-        if (!req.body.code || !/^\d{6}$/.test(String(req.body.code)) || !req.body.password || req.body.password.length < 8) return res.status(400).json({ success: false, message: 'A six-digit OTP and a password of at least 8 characters are required.' });
+        if (!req.body.code || !/^\\d{6}$/.test(String(req.body.code)) || !req.body.password || req.body.password.length < 8) return res.status(400).json({ success: false, message: 'A six-digit OTP and a password of at least 8 characters are required.' });
         const otp = await PasswordOtp.findOne({ userId: req.user.id, purpose: 'PASSWORD_CHANGE', consumedAt: { $exists: false }, expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 });
         if (!otp || otp.attempts >= 5 || hashToken(String(req.body.code)) !== otp.codeHash) {
             if (otp) await PasswordOtp.updateOne({ _id: otp._id }, { $inc: { attempts: 1 } });
