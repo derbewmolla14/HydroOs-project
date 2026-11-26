@@ -28,7 +28,7 @@ const parseOrigins = () => {
     ];
 
     return [...new Set([...configuredOrigins, ...defaultOrigins]
-        .map((origin) => origin.trim().replace(/\\/$/, ''))
+        .map((origin) => origin.trim().replace(/\/$/, ''))
         .filter(Boolean))];
 };
 
