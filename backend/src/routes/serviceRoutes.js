@@ -67,16 +67,35 @@ router.post('/link', requireRoles('OPERATOR'), async (req, res, next) => {
             return res.status(403).json({ success: false, code: 'INDIVIDUAL_PLAN_LIMIT', message: 'Your Individual plan allows one service only. Upgrade to the All Services plan to link more.' });
         }
 
-        service.assignedToUser = user._id;
-        service.linkedAt = service.linkedAt || new Date();
-        service.lastLinkedAt = new Date();
-        await service.save();
-        if (user.subscriptionPlan === 'all' && currentAllowed.length === 0) user.allowedServices = [...SERVICE_TYPES];
-        else if (!alreadyAllowed) user.allowedServices = [...currentAllowed, service.serviceType];
-        await user.save();
+        const wasAlreadyAssigned = service.assignedToUser?.toString() === user.id;
+        const now = new Date();
+        const claimedService = await ServiceDevice.findOneAndUpdate(
+            { _id: service._id, isActive: true, $or: [{ assignedToUser: null }, { assignedToUser: user._id }] },
+            { $set: { assignedToUser: user._id, linkedAt: service.linkedAt || now, lastLinkedAt: now } },
+            { new: true }
+        );
+        if (!claimedService) return res.status(409).json({ success: false, message: 'This service was linked to another account. Contact the administrator.' });
 
-        await recordAudit({ actorUserId: user.id, action: 'SERVICE_LINKED', resourceType: 'ServiceDevice', resourceId: service.id, metadata: { serviceId: service.serviceId, serviceType: service.serviceType }, ipAddress: req.ip });
-        res.status(200).json({ success: true, message: 'Service linked successfully.', service: publicService(service), allowedServices: user.allowedServices });
+        const userFilter = {
+            _id: user._id,
+            subscriptionStatus: 'active',
+            monthlyFeePaid: true,
+            $and: [{ $or: [{ subscriptionExpiresAt: null }, { subscriptionExpiresAt: { $gt: now } }] }]
+        };
+        if (user.subscriptionPlan !== 'all') {
+            userFilter.subscriptionPlan = 'individual';
+            userFilter.$and.push({ $or: [{ allowedServices: { $size: 0 } }, { allowedServices: service.serviceType }] });
+        }
+        const userUpdate = user.subscriptionPlan === 'all' && currentAllowed.length === 0
+            ? await User.findOneAndUpdate(userFilter, { $set: { allowedServices: [...SERVICE_TYPES] } }, { new: true })
+            : await User.findOneAndUpdate(userFilter, { $addToSet: { allowedServices: service.serviceType } }, { new: true });
+        if (!userUpdate) {
+            if (!wasAlreadyAssigned) await ServiceDevice.updateOne({ _id: claimedService._id, assignedToUser: user._id }, { $set: { assignedToUser: null, linkedAt: null } });
+            return res.status(403).json({ success: false, code: 'SUBSCRIPTION_CHANGED', message: 'Your subscription or service permissions changed. Refresh the page and contact the administrator if the problem continues.' });
+        }
+
+        await recordAudit({ actorUserId: user.id, action: 'SERVICE_LINKED', resourceType: 'ServiceDevice', resourceId: claimedService.id, metadata: { serviceId: claimedService.serviceId, serviceType: claimedService.serviceType }, ipAddress: req.ip });
+        res.status(200).json({ success: true, message: 'Service linked successfully.', service: publicService(claimedService), allowedServices: userUpdate.allowedServices });
     } catch (error) { next(error); }
 });
 
