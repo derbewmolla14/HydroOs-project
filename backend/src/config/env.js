@@ -41,6 +41,8 @@ export const env = Object.freeze({
     accessTokenTtl: parseTtl('ACCESS_TOKEN_TTL', '15m'),
     refreshTokenTtl: parseTtl('REFRESH_TOKEN_TTL', '7d'),
     bootstrapSecret: required('SUPER_ADMIN_BOOTSTRAP_SECRET'),
+    superAdminEmail: (required('SUPER_ADMIN_EMAIL') || '').toLowerCase(),
+    adminInviteCode: required('ADMIN_INVITE_CODE'),
     email: {
         provider: (process.env.EMAIL_PROVIDER || 'none').trim().toLowerCase(),
         apiKey: required('RESEND_API_KEY'),
