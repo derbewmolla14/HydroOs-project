@@ -178,6 +178,7 @@ router.patch('/admin/devices/:id', manager, async (req, res, next) => {
             }
             service.assignedToUser = nextUser?._id || null;
             service.linkedAt = nextUser ? new Date() : null;
+            if (!nextUser) service.isActive = false;
             await service.save();
             if (oldUserId && oldUserId !== nextUser?.id) {
                 const remaining = await ServiceDevice.exists({ assignedToUser: oldUserId, serviceType: service.serviceType, isActive: true });
