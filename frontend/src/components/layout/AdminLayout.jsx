@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   Activity, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight, Cpu,
-  Droplets, FlaskConical, Gauge, History, Leaf, LogOut, Menu, Radio,
+  Droplets, FlaskConical, Gauge, History, Leaf, Link2, LogOut, Menu, Radio,
   Settings, ShieldAlert, ShieldCheck, Users, Waves, X,
 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -20,19 +20,19 @@ const navigation = [
   { section: "ADMINISTRATION", label: "Users & Management", path: "/users", icon: Users, roles: accessRoles, children: [
     ["View & Manage Users", "/users"], ["Create New Admin", "/users/create-admin"], ["User Roles & Permissions", "/users/roles"],
   ] },
-  { section: "WATER OPERATIONS", label: "Water Tanks", path: "/tanks", icon: Droplets, roles: accessRoles, children: [
+  { section: "WATER OPERATIONS", label: "Water Tanks", path: "/tanks", icon: Droplets, roles: accessRoles, serviceType: "water_tank", children: [
     ["Live Tank Levels", "/tanks/level"], ["Add New Tanker", "/tanks/new"], ["Tank History & Logs", "/tanks/history"], ["Tank Hardware Status", "/tanks/hardware"],
   ] },
-  { section: "WATER OPERATIONS", label: "Irrigation Control", path: "/irrigation", icon: Waves, roles: accessRoles, children: [
+  { section: "WATER OPERATIONS", label: "Irrigation Control", path: "/irrigation", icon: Waves, roles: accessRoles, serviceType: "irrigation", children: [
     ["Valve Controls", "/irrigation/valves"], ["Irrigation History", "/irrigation/history"], ["Schedules & Automation", "/irrigation/schedules"],
   ] },
-  { section: "WATER OPERATIONS", label: "Soil Moisture", path: "/soil-moisture", icon: Leaf, roles: accessRoles, children: [
+  { section: "WATER OPERATIONS", label: "Soil Moisture", path: "/soil-moisture", icon: Leaf, roles: accessRoles, serviceType: "soil_moisture", children: [
     ["Current Sensor Readings", "/soil-moisture/sensors"], ["Moisture History Logs", "/soil-moisture/history"], ["Threshold Configuration", "/soil-moisture/thresholds"],
   ] },
-  { section: "WATER OPERATIONS", label: "Water Sources", path: "/water-sources", icon: Radio, roles: accessRoles, children: [
+  { section: "WATER OPERATIONS", label: "Water Sources", path: "/water-sources", icon: Radio, roles: accessRoles, serviceType: "water_source", children: [
     ["Source Intake Status", "/water-sources/intake"], ["Flow Rate Monitoring", "/water-sources/flow"], ["Source History", "/water-sources/history"],
   ] },
-  { section: "WATER OPERATIONS", label: "Water Quality", path: "/water-quality", icon: FlaskConical, roles: accessRoles, children: [
+  { section: "WATER OPERATIONS", label: "Water Quality", path: "/water-quality", icon: FlaskConical, roles: accessRoles, serviceType: "water_quality", children: [
     ["Live Parameters (pH, TDS, Turbidity)", "/water-quality"], ["Quality History Logs", "/water-quality/history"], ["Sensor Calibration", "/water-quality/calibration"],
   ] },
   { section: "DEVICE & ALERTS", label: "Devices", path: "/devices", icon: Cpu, roles: accessRoles, children: [
@@ -47,6 +47,8 @@ const navigation = [
   { section: "SYSTEM", label: "Reports", path: "/reports", icon: History, roles: accessRoles },
   { section: "SYSTEM", label: "Audit Logs", path: "/audit-logs", icon: Activity, roles: ["SUPER_ADMIN", "ORGANIZATION_ADMIN"] },
   { section: "SYSTEM", label: "Settings", path: "/settings", icon: Settings, roles: accessRoles },
+  { section: "ADMINISTRATION", label: "Service Activation", path: "/services", icon: Link2, roles: ["SUPER_ADMIN"] },
+  { section: "MY ACCOUNT", label: "My Services", path: "/services", icon: Link2, roles: ["OPERATOR"] },
 ];
 
 const roleLabels = {
@@ -66,13 +68,25 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const [expanded, setExpanded] = useState({});
   const systemRole = user?.systemRole || user?.role;
   const dashboardPath = systemRole === "OPERATOR" || systemRole === "user" ? "/home" : "/dashboard";
+  const subscriptionCurrent = user?.subscriptionStatus === "active"
+    && user?.monthlyFeePaid === true
+    && (!user?.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
   const allowedNavigation = navigation
+    .filter((item) => {
+      if (systemRole === "OPERATOR") {
+        if (item.label === "Dashboard" || item.label === "My Services") return true;
+        if (!item.serviceType || !subscriptionCurrent) return false;
+        return user?.subscriptionPlan === "all" || (user?.allowedServices || []).includes(item.serviceType);
+      }
+      return !item.roles || item.roles.includes(systemRole);
+    })
     .map((item) => item.label === "Dashboard" ? {
       ...item,
       path: dashboardPath,
-      children: item.children.map(([label, path]) => [label, path === "/dashboard" ? dashboardPath : path]),
-    } : item)
-    .filter((item) => !item.roles || item.roles.includes(systemRole));
+      children: systemRole === "OPERATOR"
+        ? [["System Overview", dashboardPath]]
+        : item.children.map(([label, path]) => [label, path === "/dashboard" ? dashboardPath : path]),
+    } : item);
   const activePath = location.pathname;
   const activeGroups = new Set(allowedNavigation
     .filter((item) => item.children?.some(([, path]) => activePath === path || (path !== item.path && activePath.startsWith(path + "/"))))
