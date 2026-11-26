@@ -48,6 +48,8 @@ export function AppNav() {
         <a href="#about">{t.nav.about}</a>
       </nav>
       <div className="nav-actions">
+        <Link to="/login" className="nav-login">Login</Link>
+        <Link to="/register" className="nav-register">Create Account</Link>
         <label className="language-select">
           <span className="sr-only">{t.nav.language}</span>
           <select
