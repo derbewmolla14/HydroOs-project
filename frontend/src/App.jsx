@@ -121,8 +121,6 @@ export function App() {
                 element={<AlertConfigurationPage />}
               />
               <Route path="/users" element={<UserManagementPage />} />
-              <Route path="/tanks" element={<TankManagementPage />} />
-              <Route path="/tanks/:tankId" element={<TankDetailsPage />} />
               <Route path="/devices" element={<DeviceManagementPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               {adminPaths
