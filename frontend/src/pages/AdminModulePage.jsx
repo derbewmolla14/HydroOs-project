@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, AlertTriangle, CheckCircle2, Clock3, Droplets, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { io } from "socket.io-client";
 import { api } from "../api";
 import { AdminLayout } from "../layouts/AdminLayout";
 
@@ -57,7 +58,20 @@ export function AdminModulePage() {
   useEffect(() => {
     load();
     const timer = window.setInterval(() => load(true), 30000);
-    return () => window.clearInterval(timer);
+    let socket;
+    try {
+      const socketOrigin = new URL(api.defaults.baseURL, window.location.origin).origin;
+      socket = io(socketOrigin, { withCredentials: true, transports: ["websocket", "polling"] });
+      const refreshFromTelemetry = () => load(true);
+      socket.on("telemetry:reading", refreshFromTelemetry);
+      socket.on("tank:water-level", refreshFromTelemetry);
+    } catch {
+      // The periodic refresh remains available if realtime transport is unavailable.
+    }
+    return () => {
+      window.clearInterval(timer);
+      socket?.disconnect();
+    };
   }, [load]);
 
   const readings = overview?.latestReadings || [];
