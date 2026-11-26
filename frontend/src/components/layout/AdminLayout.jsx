@@ -120,7 +120,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
               <div key={item.path}>
                 <div className="flex items-center">
                   <NavLink to={item.path} end={item.path === "/dashboard"}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => { setMobileOpen(false); if (item.children) setExpanded((current) => ({ ...current, [item.path]: true })); }}
                     className={({ isActive }) => `admin-nav-link flex min-w-0 flex-1 items-center gap-[13px] rounded-lg px-[13px] py-[11px] text-[.78rem] font-semibold text-[#a7ccc2] transition-colors${isActive || activeChild ? " active bg-[#a2e8cc] text-[#073a37]" : ""}`}
                     title={collapsed ? item.label : undefined}>
                     <span className="nav-glyph grid w-[18px] min-w-[18px] place-items-center text-[1.1rem]">{item.icon}</span>
