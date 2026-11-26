@@ -26,7 +26,8 @@ const initialForm = {
 const roles = ["ORGANIZATION_ADMIN", "SUB_ADMIN", "OPERATOR"];
 
 export function UserManagementPage() {
-  const { user } = useAuth();\n  const location = useLocation();
+  const { user } = useAuth();
+  const location = useLocation();
   const [users, setUsers] = useState([]);
   const [tanks, setTanks] = useState([]);
   const [organizations, setOrganizations] = useState([]);
