@@ -9,7 +9,7 @@ import {
   Search,
   Trash2,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
@@ -56,7 +56,7 @@ const managerRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
 
 export function TankManagementPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const navigate = useNavigate();\n  const location = useLocation();
   const canManage =
     managerRoles.includes((user?.systemRole || user?.role)) &&
     ((user?.systemRole || user?.role) !== "SUB_ADMIN" ||
@@ -151,6 +151,9 @@ export function TankManagementPage() {
     setFormStep(tank ? 2 : 1);
     setFormError("");
   }
+  useEffect(() => {
+    if (location.pathname.endsWith("/new")) openForm();
+  }, [location.pathname]);
   function updateForm(event) {
     setForm((current) => ({
       ...current,
