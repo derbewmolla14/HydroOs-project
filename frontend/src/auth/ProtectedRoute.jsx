@@ -7,7 +7,7 @@ export function ProtectedRoute({ roles }) {
   if (loading)
     return <div className="p-8 text-slate-300">Loading HydroOS...</div>;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
-  if (roles && !roles.includes(user.role))
+  if (roles && !roles.includes(user.systemRole || user.role))
     return <Navigate to="/login" replace state={{ unauthorized: true }} />;
   return <Outlet />;
 }

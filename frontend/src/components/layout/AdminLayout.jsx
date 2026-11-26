@@ -18,23 +18,23 @@ const navigation = [
   ["Dashboard", "/dashboard", "⌂"],
   ["Organizations", "/organizations", "◈", ["SUPER_ADMIN"]],
   ["Users", "/users", "♙", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
-  ["Water Tanks", "/tanks", "◉"],
-  ["Irrigation Control", "/irrigation", "≈"],
-  ["Soil Moisture", "/soil-moisture", "⌁"],
-  ["Water Sources", "/water-sources", "◌"],
-  ["Devices", "/devices", "▣"],
-  ["Smart Alerts", "/alerts", "⚠"],
-  ["Notifications", "/notifications", "♢"],
+  ["Water Tanks", "/tanks", "◉", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Irrigation Control", "/irrigation", "≈", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Soil Moisture", "/soil-moisture", "⌁", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Water Sources", "/water-sources", "◌", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Devices", "/devices", "▣", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Smart Alerts", "/alerts", "⚠", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Notifications", "/notifications", "♢", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
   [
     "Alert Settings",
     "/alert-settings",
     "⚙",
     ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"],
   ],
-  ["Schedule", "/schedule", "◷"],
-  ["Reports", "/reports", "▤"],
-  ["Audit Logs", "/audit-logs", "▥"],
-  ["Settings", "/settings", <Settings size={17} />],
+  ["Schedule", "/schedule", "◷", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Reports", "/reports", "▤", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Audit Logs", "/audit-logs", "▥", ["SUPER_ADMIN", "ORGANIZATION_ADMIN"]],
+  ["Settings", "/settings", <Settings size={17} />, ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
 ];
 
 const roleLabels = {
@@ -50,9 +50,13 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
-  const allowedNavigation = navigation.filter(
-    ([, , , roles]) => !roles || roles.includes(user?.role),
-  );
+  const systemRole = user?.systemRole || user?.role;
+  const dashboardPath = systemRole === "OPERATOR" || systemRole === "user" ? "/home" : "/dashboard";
+  const allowedNavigation = navigation
+    .map(([label, path, icon, roles], index) =>
+      index === 0 ? [label, dashboardPath, icon, roles] : [label, path, icon, roles],
+    )
+    .filter(([, , , roles]) => !roles || roles.includes(systemRole));
   useEffect(() => {
     api
       .get("/notifications")
@@ -183,7 +187,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
               <Bell size={19} />
               {unread > 0 && <i>{unread > 99 ? "99+" : unread}</i>}
             </NavLink>
-            {user?.role === "SUPER_ADMIN" && (
+            {systemRole === "SUPER_ADMIN" && (
               <NavLink
                 className="topbar-icon relative grid place-items-center text-[#65807d]"
                 to="/change-password"
@@ -203,7 +207,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
                   {user?.firstname || user?.email?.split("@")[0]}
                 </strong>
                 <small className="text-[.63rem] text-[#8ca4a0]">
-                  {roleLabels[user?.role] || user?.role}
+                  {roleLabels[systemRole] || user?.role}
                 </small>
               </div>
               <button

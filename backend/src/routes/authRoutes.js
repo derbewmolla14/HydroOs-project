@@ -1,35 +1,122 @@
 import crypto from 'node:crypto';
 import express from 'express';
 import { User } from '../models/User.js';
+import { Organization } from '../models/Organization.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { recordAudit } from '../services/auditService.js';
 import { hashPassword, hashToken, issueTokens, setAuthCookies, clearAuthCookies, verifyPassword, verifyRefreshToken } from '../services/authService.js';
 import { authenticate } from '../middleware/auth.js';
 import { PasswordOtp } from '../models/PasswordOtp.js';
 import { sendPasswordOtp } from '../services/emailService.js';
+import { env } from '../config/env.js';
 
 const router = express.Router();
-const publicUser = (user) => ({
-    id: user._id.toString(),
-    email: user.email,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    role: user.role,
-    organizationId: user.organizationId?.toString() || null,
-    permissions: user.permissions || []
-});
+const publicUser = (user) => {
+    const systemRole = user.role;
+    return {
+        id: user._id.toString(),
+        email: user.email,
+        firstName: user.firstName || user.firstname,
+        lastName: user.lastName || user.lastname,
+        phoneNumber: user.phoneNumber || user.phone,
+        firstname: user.firstName || user.firstname,
+        lastname: user.lastName || user.lastname,
+        phone: user.phoneNumber || user.phone,
+        // Keep the internal RBAC role separately for frontend authorization.
+        role: systemRole === 'OPERATOR' ? 'user' : 'admin',
+        systemRole,
+        organizationId: user.organizationId?.toString() || null,
+        permissions: user.permissions || []
+    };
+};
+
+function hasValidAdminInviteCode(providedCode) {
+    const expectedCode = env.adminInviteCode?.trim();
+    const candidate = typeof providedCode === 'string' ? providedCode.trim() : '';
+    if (!expectedCode || !candidate) return false;
+    const expected = Buffer.from(expectedCode, 'utf8');
+    const provided = Buffer.from(candidate, 'utf8');
+    return expected.length === provided.length && crypto.timingSafeEqual(expected, provided);
+}
 
 router.post('/register', async (req, res, next) => {
+    let organization = null;
     try {
-        const { email, password, firstname, lastname, username, phone } = req.body;
-        if (!email || !password || password.length < 8 || !firstname) {
-            return res.status(400).json({ success: false, message: 'Email, first name, and a password of at least 8 characters are required.' });
+        const firstName = String(req.body.firstName ?? req.body.firstname ?? '').trim();
+        const lastName = String(req.body.lastName ?? req.body.lastname ?? '').trim();
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const phoneNumber = String(req.body.phoneNumber ?? req.body.phone ?? '').trim();
+        const password = req.body.password;
+        const requestedRole = String(req.body.role || 'user').trim().toLowerCase();
+
+        if (!firstName || !lastName || !email || !phoneNumber || typeof password !== 'string' || !password) {
+            return res.status(400).json({ success: false, message: 'First name, last name, email, phone number, and password are required.' });
         }
-        const exists = await User.exists({ email: email.toLowerCase() });
-        if (exists) return res.status(409).json({ success: false, message: 'Email is already registered.' });
-        const user = await User.create({ email: email.toLowerCase(), passwordHash: await hashPassword(password), firstname, lastname, username, phone, role: 'OPERATOR', status: 'active' });
-        await recordAudit({ actorUserId: user.id, action: 'USER_REGISTERED', resourceType: 'User', resourceId: user.id, ipAddress: req.ip });
-        res.status(201).json({ success: true, user: publicUser(user) });
+        if (password.length < 8) return res.status(400).json({ success: false, message: 'Password must contain at least 8 characters.' });
+        if (!['user', 'admin'].includes(requestedRole)) return res.status(400).json({ success: false, message: 'Role must be either user or admin.' });
+
+        const isConfiguredSuperAdmin = Boolean(env.superAdminEmail && email === env.superAdminEmail);
+        let assignedRole = 'OPERATOR';
+        if (requestedRole === 'admin') {
+            if (!env.adminInviteCode) return res.status(503).json({ success: false, message: 'Admin registration is not configured. Contact the HydroOS administrator.' });
+            if (!hasValidAdminInviteCode(req.body.inviteCode)) {
+                return res.status(403).json({ success: false, message: 'Invalid Admin Invitation Code.' });
+            }
+            assignedRole = isConfiguredSuperAdmin ? 'SUPER_ADMIN' : 'ORGANIZATION_ADMIN';
+        } else if (isConfiguredSuperAdmin) {
+            return res.status(403).json({ success: false, message: 'The configured Super Admin email must register using the Admin role and a valid invitation code.' });
+        }
+
+        if (await User.exists({ email })) return res.status(409).json({ success: false, message: 'Email is already registered.' });
+
+        if (assignedRole === 'ORGANIZATION_ADMIN') {
+            const organizationName = String(req.body.organizationName || `${firstName} ${lastName} Organization`).trim();
+            organization = await Organization.create({
+                name: organizationName,
+                code: `ORG-${crypto.randomBytes(5).toString('hex').toUpperCase()}`,
+                type: 'WATER_MANAGEMENT'
+            });
+        }
+
+        let user;
+        try {
+            user = await User.create({
+                firstName,
+                lastName,
+                phoneNumber,
+                // Keep old field names populated while the rest of the app migrates.
+                firstname: firstName,
+                lastname: lastName,
+                phone: phoneNumber,
+                email,
+                passwordHash: await hashPassword(password),
+                role: assignedRole,
+                organizationId: organization?._id || null,
+                status: 'active'
+            });
+        } catch (error) {
+            if (organization) await Organization.deleteOne({ _id: organization._id });
+            if (error?.code === 11000) return res.status(409).json({ success: false, message: 'Email is already registered.' });
+            throw error;
+        }
+
+        const tokens = issueTokens(user);
+        user.refreshTokenHash = hashToken(tokens.refreshToken);
+        user.lastLoginAt = new Date();
+        user.lastActivityAt = new Date();
+        await user.save();
+        setAuthCookies(res, tokens);
+        await recordAudit({
+            actorUserId: user.id,
+            action: 'USER_REGISTERED',
+            resourceType: 'User',
+            resourceId: user.id,
+            organizationId: organization?._id,
+            metadata: { role: assignedRole },
+            ipAddress: req.ip
+        });
+        // JWTs remain in HttpOnly cookies; never expose bearer tokens to browser JS.
+        res.status(201).json({ success: true, message: 'Registration successful.', user: publicUser(user) });
     } catch (error) {
         next(error);
     }
@@ -37,7 +124,8 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
     try {
-        const email = req.body.email?.toLowerCase();
+        const email = String(req.body.email || '').trim().toLowerCase();
+        if (!email || !req.body.password) return res.status(400).json({ success: false, message: 'Email and password are required.' });
         const user = await User.findOne({ email }).select('+passwordHash +password +refreshTokenHash');
         if (!user || user.status !== 'active') return res.status(401).json({ success: false, message: 'Invalid credentials.' });
         const valid = user.passwordHash
@@ -120,7 +208,7 @@ router.post('/password-change/request', authenticate, async (req, res, next) => 
 
 router.post('/password-change/confirm', authenticate, async (req, res, next) => {
     try {
-        if (!req.body.code || !/^\d{6}$/.test(String(req.body.code)) || !req.body.password || req.body.password.length < 8) return res.status(400).json({ success: false, message: 'A six-digit OTP and a password of at least 8 characters are required.' });
+        if (!req.body.code || !/^[0-9]{6}$/.test(String(req.body.code)) || !req.body.password || req.body.password.length < 8) return res.status(400).json({ success: false, message: 'A six-digit OTP and a password of at least 8 characters are required.' });
         const otp = await PasswordOtp.findOne({ userId: req.user.id, purpose: 'PASSWORD_CHANGE', consumedAt: { $exists: false }, expiresAt: { $gt: new Date() } }).sort({ createdAt: -1 });
         if (!otp || otp.attempts >= 5 || hashToken(String(req.body.code)) !== otp.codeHash) {
             if (otp) await PasswordOtp.updateOne({ _id: otp._id }, { $inc: { attempts: 1 } });

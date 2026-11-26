@@ -49,9 +49,9 @@ export function AlertConfigurationPage() {
     success: "",
   });
   const editable =
-    user?.role === "SUPER_ADMIN" ||
-    user?.role === "ORGANIZATION_ADMIN" ||
-    (user?.role === "SUB_ADMIN" &&
+    (user?.systemRole || user?.role) === "SUPER_ADMIN" ||
+    (user?.systemRole || user?.role) === "ORGANIZATION_ADMIN" ||
+    ((user?.systemRole || user?.role) === "SUB_ADMIN" &&
       (user.permissions || []).some((permission) =>
         ["alerts:manage", "manage_alerts", "alerts"].includes(permission),
       ));
