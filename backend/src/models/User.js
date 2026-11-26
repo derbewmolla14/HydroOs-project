@@ -16,6 +16,15 @@ const userSchema = new mongoose.Schema({
     roleIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Role' }],
     role: { type: String, enum: ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN', 'OPERATOR'], default: 'OPERATOR' },
     permissions: { type: [String], default: [] },
+    subscriptionStatus: { type: String, enum: ['active', 'inactive', 'expired'], default: 'inactive', index: true },
+    subscriptionPlan: { type: String, enum: ['individual', 'all'], default: 'individual' },
+    monthlyFeePaid: { type: Boolean, default: false },
+    monthlyFeePaidAt: { type: Date, default: null },
+    subscriptionExpiresAt: { type: Date, default: null },
+    allowedServices: {
+        type: [{ type: String, enum: ['water_tank', 'irrigation', 'soil_moisture', 'water_source', 'water_quality'] }],
+        default: []
+    },
     status: { type: String, enum: ['invited', 'active', 'suspended', 'deactivated'], default: 'active' },
     refreshTokenHash: { type: String, select: false },
     invitationTokenHash: { type: String, select: false },

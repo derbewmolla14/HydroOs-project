@@ -56,7 +56,8 @@ const managerRoles = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"];
 
 export function TankManagementPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();\n  const location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const canManage =
     managerRoles.includes((user?.systemRole || user?.role)) &&
     ((user?.systemRole || user?.role) !== "SUB_ADMIN" ||

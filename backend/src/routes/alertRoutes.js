@@ -1,12 +1,13 @@
 import express from 'express';
 import { Alert } from '../models/Alert.js';
 import { AlertConfig } from '../models/AlertConfig.js';
-import { authenticate, hasTenantAccess, requireRoles } from '../middleware/auth.js';
+import { authenticate, hasTenantAccess, requireRoles, requireAnyServiceSubscription } from '../middleware/auth.js';
 import { canManageAlertLifecycle, canManageAlerts, configFor, listAlerts, validateAlertConfig } from '../services/alertService.js';
 import { recordAudit } from '../services/auditService.js';
 
 const router = express.Router();
 router.use(authenticate);
+router.use(requireAnyServiceSubscription);
 
 router.get('/', async (req, res, next) => {
     try { res.json({ success: true, ...await listAlerts({ user: req.user, query: req.query }) }); } catch (error) { next(error); }

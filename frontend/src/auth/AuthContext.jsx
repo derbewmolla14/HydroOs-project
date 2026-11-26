@@ -14,6 +14,11 @@ export function AuthProvider({ children }) {
     const value = useMemo(() => ({
         user,
         loading,
+        async refreshUser() {
+            const { data } = await api.get('/auth/me');
+            setUser(data.user);
+            return data.user;
+        },
         async register(form) {
             const { data } = await api.post('/auth/register', form);
             setUser(data.user);

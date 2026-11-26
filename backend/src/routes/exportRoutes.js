@@ -1,10 +1,11 @@
 import express from 'express';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, requireServiceAccess } from '../middleware/auth.js';
 import { recordAudit } from '../services/auditService.js';
 import { collectTankHistory, createTankHistoryDocument, createTankHistoryWorkbook } from '../services/exportService.js';
 
 const router = express.Router();
 router.use(authenticate);
+router.use(requireServiceAccess('water_tank'));
 
 router.get('/tank-history', async (req, res, next) => {
     try {

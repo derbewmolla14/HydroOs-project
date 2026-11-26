@@ -1,5 +1,5 @@
 import express from 'express';
-import { authenticate, hasTenantAccess, requireRoles } from '../middleware/auth.js';
+import { authenticate, hasTenantAccess, requireRoles, requireServiceAccess } from '../middleware/auth.js';
 import { Tank } from '../models/Tank.js';
 import { User } from '../models/User.js';
 import { assertEntitlement } from '../services/entitlementService.js';
@@ -8,6 +8,7 @@ import { assertTankInput, canManageTanks, serializeTank, tankFields, tankOrganiz
 
 const router = express.Router();
 router.use(authenticate);
+router.use(requireServiceAccess('water_tank'));
 
 function getOrganizationId(req) {
     return req.user.role === 'SUPER_ADMIN' ? req.body.organizationId || req.query.organizationId : req.user.organizationId;
