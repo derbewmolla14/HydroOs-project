@@ -159,7 +159,11 @@ function WaterLevelLive() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const apiOrigin = new URL(api.defaults.baseURL || "/api/v1", window.location.origin).origin;
+    const configuredApiUrl = import.meta.env.VITE_API_URL
+      || import.meta.env.VITE_API_BASE_URL
+      || api.defaults.baseURL
+      || window.location.origin;
+    const apiOrigin = new URL(configuredApiUrl, window.location.origin).origin;
     const endpoint = new URL("/api/water-level", apiOrigin).toString();
     let disposed = false;
     let inFlight = false;
