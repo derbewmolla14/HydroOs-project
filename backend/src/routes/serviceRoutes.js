@@ -79,6 +79,7 @@ router.post('/link', requireRoles('OPERATOR'), async (req, res, next) => {
         const userFilter = {
             _id: user._id,
             subscriptionStatus: 'active',
+            subscriptionPlan: user.subscriptionPlan,
             monthlyFeePaid: true,
             $and: [{ $or: [{ subscriptionExpiresAt: null }, { subscriptionExpiresAt: { $gt: now } }] }]
         };
