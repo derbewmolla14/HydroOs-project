@@ -15,7 +15,7 @@ const emptyDevice = { serviceId: "", serviceType: "water_tank", assignedToUser: 
 const emptySubscription = { subscriptionStatus: "inactive", subscriptionPlan: "individual", monthlyFeePaid: false, subscriptionExpiresAt: "", allowedServices: [] };
 
 export function ServiceManagementPage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const isSuperAdmin = (user?.systemRole || user?.role) === "SUPER_ADMIN";
   const [services, setServices] = useState([]);
   const [users, setUsers] = useState([]);
@@ -106,6 +106,7 @@ export function ServiceManagementPage() {
       const { data } = await api.post("/services/link", linkForm);
       setSuccess(data.message || "Service linked successfully.");
       setLinkForm({ serviceId: "", servicePassword: "" });
+      await refreshUser();
       await load();
     } catch (err) { setError(err.response?.data?.message || "Service could not be linked."); }
     finally { setSaving(false); }
