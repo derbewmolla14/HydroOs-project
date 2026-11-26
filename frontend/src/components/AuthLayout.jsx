@@ -11,7 +11,6 @@ import {
   Phone,
   // MessageCircle,
   Send,
-  ShieldCheck,
   Sun,
   Users,
   Waves,
@@ -67,10 +66,6 @@ export function AppNav() {
         >
           {dark ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        <Link to="/login" className="nav-login">
-          <ShieldCheck size={16} />
-          {t.nav.admin}
-        </Link>
       </div>
     </header>
   );
@@ -134,7 +129,6 @@ export function PublicFooter() {
             <a href="/login">Home</a>
             <a href="#about">About Us</a>
             <a href="#features">Features</a>
-            <Link to="/login">Admin</Link>
           </nav>
         </section>
         <section className="footer-section" id="contact">
