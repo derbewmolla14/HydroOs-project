@@ -9,7 +9,7 @@ import {
   UserPlus,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
@@ -26,7 +26,7 @@ const initialForm = {
 const roles = ["ORGANIZATION_ADMIN", "SUB_ADMIN", "OPERATOR"];
 
 export function UserManagementPage() {
-  const { user } = useAuth();
+  const { user } = useAuth();\n  const location = useLocation();
   const [users, setUsers] = useState([]);
   const [tanks, setTanks] = useState([]);
   const [organizations, setOrganizations] = useState([]);
@@ -79,6 +79,16 @@ export function UserManagementPage() {
     });
     setMessage({ error: "", success: "", token: "" });
   }
+  useEffect(() => {
+    if (location.pathname.endsWith("/create-admin")) {
+      setForm({
+        ...initialForm,
+        role: "ORGANIZATION_ADMIN",
+        organizationId: (user?.systemRole || user?.role) === "SUPER_ADMIN" ? "" : user?.organizationId || "",
+      });
+      setMessage({ error: "", success: "", token: "" });
+    }
+  }, [location.pathname, user?.systemRole, user?.role, user?.organizationId]);
   function openEdit(item) {
     setForm({
       ...initialForm,
