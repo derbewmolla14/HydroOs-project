@@ -11,11 +11,26 @@ const required = (name) => {
     return value || undefined;
 };
 
-const parseOrigins = () => [...new Set((process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN || 'http://localhost:5173')
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean)
-    .concat(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:5173', 'http://127.0.0.1:5173']))];
+const parseOrigins = () => {
+    const configuredOrigins = [
+        process.env.CLIENT_ORIGINS,
+        process.env.CLIENT_ORIGIN,
+        process.env.CORS_ORIGIN,
+        process.env.FRONTEND_URL
+    ].filter(Boolean).flatMap((value) => value.split(','));
+
+    const defaultOrigins = [
+        'https://hydro-os-project-ofqb.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:3000'
+    ];
+
+    return [...new Set([...configuredOrigins, ...defaultOrigins]
+        .map((origin) => origin.trim().replace(/\/$/, ''))
+        .filter(Boolean))];
+};
 
 const parseTtl = (name, fallback) => {
     const value = process.env[name]?.trim() || fallback;
