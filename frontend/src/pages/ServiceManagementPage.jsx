@@ -132,8 +132,8 @@ export function ServiceManagementPage() {
 
   function toggleAllowedService(serviceType) {
     setSubscriptionForm((current) => {
-      if (current.subscriptionPlan === "all") return current;
       const exists = current.allowedServices.includes(serviceType);
+      if (current.subscriptionPlan === "individual" && !exists) return { ...current, allowedServices: [serviceType] };
       return { ...current, allowedServices: exists ? current.allowedServices.filter((item) => item !== serviceType) : [...current.allowedServices, serviceType] };
     });
   }
@@ -183,7 +183,7 @@ export function ServiceManagementPage() {
             </div>
             <label className="flex items-center gap-2 text-sm text-[#54716d]"><input type="checkbox" checked={subscriptionForm.monthlyFeePaid} onChange={(e) => setSubscriptionForm({ ...subscriptionForm, monthlyFeePaid: e.target.checked })}/> Monthly fee paid</label>
             <label className="grid gap-1 text-xs font-semibold text-[#54716d]">Subscription expiry date<input type="date" value={subscriptionForm.subscriptionExpiresAt} onChange={(e) => setSubscriptionForm({ ...subscriptionForm, subscriptionExpiresAt: e.target.value })} className="rounded-lg border border-[#dce9e5] p-2.5 text-sm"/></label>
-            <div className="grid gap-2 sm:grid-cols-2">{serviceTypes.map(([value,label]) => <label key={value} className="flex items-center gap-2 text-xs text-[#54716d]"><input type="checkbox" disabled={subscriptionForm.subscriptionPlan === "all"} checked={subscriptionForm.allowedServices.includes(value)} onChange={() => toggleAllowedService(value)}/>{label}</label>)}</div>
+            <div className="grid gap-2 sm:grid-cols-2">{serviceTypes.map(([value,label]) => <label key={value} className="flex items-center gap-2 text-xs text-[#54716d]"><input type="checkbox" checked={subscriptionForm.allowedServices.includes(value)} onChange={() => toggleAllowedService(value)}/>{label}</label>)}</div>
             <button disabled={saving || !selectedUserId} className="rounded-lg bg-[#0d6254] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50">{saving ? "Saving…" : "Save subscription & permissions"}</button>
           </form>
         </section>
