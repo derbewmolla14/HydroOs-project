@@ -36,8 +36,8 @@ const blank = {
 export function DeviceManagementPage() {
   const { user } = useAuth();
   const canManage =
-    roles.includes(user?.role) &&
-    (user?.role !== "SUB_ADMIN" ||
+    roles.includes((user?.systemRole || user?.role)) &&
+    ((user?.systemRole || user?.role) !== "SUB_ADMIN" ||
       (user.permissions || []).some((permission) =>
         ["devices:manage", "manage_devices", "devices"].includes(permission),
       ));
@@ -88,12 +88,12 @@ export function DeviceManagementPage() {
       .get("/tanks", { params: { limit: 100 } })
       .then(({ data }) => setTanks(data.tanks))
       .catch(() => setTanks([]));
-    if (user?.role === "SUPER_ADMIN")
+    if ((user?.systemRole || user?.role) === "SUPER_ADMIN")
       api
         .get("/dashboard/overview")
         .then(({ data }) => setOrganizations(data.organizations))
         .catch(() => setOrganizations([]));
-  }, [user?.role]);
+  }, [(user?.systemRole || user?.role)]);
   function updateFilter(key, value) {
     setFilters((current) => ({
       ...current,
@@ -383,7 +383,7 @@ export function DeviceManagementPage() {
               </div>
               <form className="tank-form" onSubmit={saveDevice}>
                 <div className="form-grid">
-                  {user.role === "SUPER_ADMIN" && !form._id && (
+                  {(user.systemRole || user.role) === "SUPER_ADMIN" && !form._id && (
                     <label>
                       Organization
                       <select
