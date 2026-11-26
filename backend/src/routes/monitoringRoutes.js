@@ -19,7 +19,7 @@ function operatorServices(req, res) {
     if (req.user.role !== 'OPERATOR') return null;
     const user = req.user;
     const current = user.subscriptionStatus === 'active' && user.monthlyFeePaid === true
-        && (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+        && user.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
     if (!current) {
         res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid monthly subscription is required to view monitoring data.' });
         return false;
