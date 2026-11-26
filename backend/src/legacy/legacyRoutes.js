@@ -27,9 +27,9 @@ function createUploadMiddleware() {
 export function registerLegacyRoutes(app, io, projectRoot) {
     const upload = createUploadMiddleware();
 
-    app.post('/api/register', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/register.' }));;
+    app.post('/api/register', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/register.' }));
 
-    app.post('/api/login', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/login.' }));;
+    app.post('/api/login', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/login.' }));
 
     app.post('/api/reset-password', async (req, res, next) => {
         try {
@@ -66,7 +66,7 @@ export function registerLegacyRoutes(app, io, projectRoot) {
         });
     });
 
-    app.post('/admin/login', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/login.' }));;
+    app.post('/admin/login', (req, res) => res.status(410).json({ success: false, message: 'This authentication endpoint has been retired. Use /api/v1/auth/login.' }));
 
     app.post('/admin/approve-payment', async (req, res, next) => {
         try {
