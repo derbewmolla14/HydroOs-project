@@ -57,3 +57,16 @@ export function requireServiceAccess(serviceType) {
         next();
     };
 }
+
+export function requireAnyServiceSubscription(req, res, next) {
+    if (!req.user || req.user.role !== 'OPERATOR') return next();
+    const user = req.user;
+    const current = user.subscriptionStatus === 'active'
+        && user.monthlyFeePaid === true
+        && (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+    const hasServices = user.subscriptionPlan === 'all' || (user.allowedServices || []).length > 0;
+    if (!current || !hasServices) {
+        return res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid subscription with at least one enabled service is required.' });
+    }
+    next();
+}
