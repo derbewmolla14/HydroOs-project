@@ -69,6 +69,8 @@ export function App() {
               <Route path="/services" element={<ServiceManagementPage />} />
             </Route>
             <Route element={<ProtectedRoute serviceType="water_tank" />}>
+              <Route path="/tanks" element={<TankManagementPage />} />
+              <Route path="/tanks/:tankId" element={<TankDetailsPage />} />
               <Route path="/tanks/level" element={<AdminModulePage />} />
               <Route path="/tanks/hardware" element={<AdminModulePage />} />
               <Route path="/tanks/status" element={<AdminModulePage />} />
