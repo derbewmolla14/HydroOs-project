@@ -148,6 +148,24 @@ router.patch('/admin/devices/:id', manager, async (req, res, next) => {
     } catch (error) { next(error); }
 });
 
+
+router.get('/admin/users', manager, async (req, res, next) => {
+    try {
+        const users = await User.find({}, 'firstName lastName firstname lastname email role status subscriptionStatus subscriptionPlan monthlyFeePaid monthlyFeePaidAt subscriptionExpiresAt allowedServices').sort({ createdAt: -1 }).lean();
+        res.json({ success: true, users: users.map((user) => ({
+            id: user._id.toString(), email: user.email,
+            name: [user.firstName || user.firstname, user.lastName || user.lastname].filter(Boolean).join(' '),
+            role: user.role, status: user.status,
+            subscriptionStatus: user.subscriptionStatus || 'inactive',
+            subscriptionPlan: user.subscriptionPlan || 'individual',
+            monthlyFeePaid: user.monthlyFeePaid === true,
+            monthlyFeePaidAt: user.monthlyFeePaidAt || null,
+            subscriptionExpiresAt: user.subscriptionExpiresAt || null,
+            allowedServices: user.allowedServices || []
+        })) });
+    } catch (error) { next(error); }
+});
+
 router.patch('/admin/users/:userId/subscription', manager, async (req, res, next) => {
     try {
         if (!mongoose.isValidObjectId(req.params.userId)) return res.status(400).json({ success: false, message: 'Invalid user ID.' });
