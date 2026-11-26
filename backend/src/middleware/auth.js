@@ -50,7 +50,8 @@ export function requireServiceAccess(serviceType) {
         if (!validSubscription) {
             return res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid monthly subscription is required to use this service.' });
         }
-        const allowed = user.subscriptionPlan === 'all' || (user.allowedServices || []).includes(serviceType);
+        const allowedServices = user.allowedServices || [];
+        const allowed = allowedServices.includes(serviceType) || (user.subscriptionPlan === 'all' && allowedServices.length === 0);
         if (!allowed) {
             return res.status(403).json({ success: false, code: 'SERVICE_NOT_ALLOWED', message: 'This service is not included in your subscription. Contact your HydroOS administrator.' });
         }
