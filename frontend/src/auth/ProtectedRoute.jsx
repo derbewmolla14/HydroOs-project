@@ -13,7 +13,7 @@ export function ProtectedRoute({ roles, serviceType }) {
   if (serviceType && role === "OPERATOR") {
     const subscriptionCurrent = user.subscriptionStatus === "active"
       && user.monthlyFeePaid === true
-      && (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
+      && user.subscriptionExpiresAt && new Date(user.subscriptionExpiresAt) > new Date();
     const allowedServices = user.allowedServices || [];
     const hasService = allowedServices.includes(serviceType);
     if (!subscriptionCurrent || !hasService) return <Navigate to="/services" replace state={{ serviceRequired: serviceType }} />;
