@@ -6,6 +6,7 @@ const deviceSchema = new mongoose.Schema({
     identifier: { type: String, required: true, trim: true, uppercase: true },
     name: { type: String, required: true, trim: true },
     deviceType: { type: String, enum: ['level_sensor', 'flow_meter', 'quality_sensor', 'gateway', 'multi_sensor'], default: 'level_sensor' },
+    serviceType: { type: String, enum: ['water_tank', 'irrigation', 'soil_moisture', 'water_source', 'water_quality'], default: 'water_tank', index: true },
     protocol: { type: String, enum: ['http', 'mqtt', 'socket'], default: 'http' },
     firmwareVersion: { type: String, trim: true, default: '' },
     heartbeatIntervalSeconds: { type: Number, min: 10, max: 86400, default: 300 },
