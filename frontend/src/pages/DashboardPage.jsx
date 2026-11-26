@@ -101,6 +101,11 @@ export function DashboardPage() {
   const [error, setError] = useState("");
 
   async function loadOverview() {
+    if (isOperator && !subscriptionCurrent) {
+      setOverview(null);
+      setLoading(false);
+      return;
+    }
     try {
       const { data } = await api.get("/monitoring/overview");
       setOverview(data);
@@ -115,6 +120,10 @@ export function DashboardPage() {
     }
   }
   async function loadHistory() {
+    if (isOperator && !subscriptionCurrent) {
+      setHistory({ points: [], loading: false, error: "" });
+      return;
+    }
     setHistory((current) => ({ ...current, loading: true, error: "" }));
     try {
       const { data } = await api.get("/monitoring/history", {
