@@ -51,7 +51,7 @@ export function requireServiceAccess(serviceType) {
             return res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid monthly subscription is required to use this service.' });
         }
         const allowedServices = user.allowedServices || [];
-        const allowed = allowedServices.includes(serviceType) || (user.subscriptionPlan === 'all' && allowedServices.length === 0);
+        const allowed = allowedServices.includes(serviceType);
         if (!allowed) {
             return res.status(403).json({ success: false, code: 'SERVICE_NOT_ALLOWED', message: 'This service is not included in your subscription. Contact your HydroOS administrator.' });
         }
@@ -65,7 +65,7 @@ export function requireAnyServiceSubscription(req, res, next) {
     const current = user.subscriptionStatus === 'active'
         && user.monthlyFeePaid === true
         && (!user.subscriptionExpiresAt || new Date(user.subscriptionExpiresAt) > new Date());
-    const hasServices = user.subscriptionPlan === 'all' || (user.allowedServices || []).length > 0;
+    const hasServices = (user.allowedServices || []).length > 0;
     if (!current || !hasServices) {
         return res.status(403).json({ success: false, code: 'SUBSCRIPTION_REQUIRED', message: 'An active, paid subscription with at least one enabled service is required.' });
     }
