@@ -72,11 +72,16 @@ router.get('/overview', async (req, res, next) => {
         if (tankIds) filter._id = { $in: tankIds };
         const tanks = services && !services.includes('water_tank') ? [] : await Tank.find(filter).select('name code capacity status currentWaterLevel lastMeasuredAt assignedOperatorId').lean({ virtuals: true });
         const organizationFilter = monitoringFilter(req.user, req.query.organizationId);
-        const deviceFilter = { ...organizationFilter, ...(tankIds ? { tankId: { $in: tankIds } } : {}) };
-        const devices = services && !services.includes('water_tank') ? [] : await Device.find(deviceFilter).select('name identifier status tankId heartbeatIntervalSeconds lastSeenAt lastHeartbeatAt').populate('tankId', 'name code capacity currentWaterLevel').lean({ virtuals: true });
+        const deviceFilter = {
+            ...organizationFilter,
+            ...(services ? { serviceType: { $in: services } } : {}),
+            ...(tankIds ? { $or: [{ serviceType: { $ne: 'water_tank' } }, { tankId: { $in: tankIds } }] } : {})
+        };
+        const devices = services && services.length === 0 ? [] : await Device.find(deviceFilter).select('name identifier status serviceType tankId heartbeatIntervalSeconds lastSeenAt lastHeartbeatAt').populate('tankId', 'name code capacity currentWaterLevel').lean({ virtuals: true });
         const now = Date.now();
         const online = devices.filter((device) => device.status === 'active' && device.lastSeenAt && now - new Date(device.lastSeenAt).getTime() <= device.heartbeatIntervalSeconds * 2000).length;
-        const readingFilter = applyServiceReadingScope({ ...organizationFilter, ...(tankIds ? { tankId: { $in: tankIds } } : {}), measuredAt: { $gte: new Date(now - 24 * 60 * 60 * 1000) } }, services);
+        const readingFilter = applyServiceReadingScope({ ...organizationFilter, measuredAt: { $gte: new Date(now - 24 * 60 * 60 * 1000) } }, services);
+        if (services) readingFilter.deviceId = { $in: devices.map((device) => device._id) };
         const readings = await DeviceReading.find(readingFilter).sort({ measuredAt: -1 }).limit(2000).lean();
         const waterReadings = readings.filter((reading) => reading.waterVolume !== null || reading.waterLevel !== null);
         const latest = waterReadings[0] || null;
@@ -96,7 +101,16 @@ router.get('/history', async (req, res, next) => {
         if (services === false) return;
         const filter = monitoringFilter(req.user, req.query.organizationId);
         const tankIds = await scopedTankIds(req, filter);
-        const readingFilter = applyServiceReadingScope({ ...filter, ...(tankIds ? { tankId: { $in: tankIds } } : {}) }, services);
+        const readingFilter = applyServiceReadingScope({ ...filter }, services);
+        if (services) {
+            const serviceDeviceFilter = {
+                ...filter,
+                serviceType: { $in: services },
+                ...(tankIds ? { $or: [{ serviceType: { $ne: 'water_tank' } }, { tankId: { $in: tankIds } }] } : {})
+            };
+            const allowedDeviceIds = await Device.find(serviceDeviceFilter).distinct('_id');
+            readingFilter.deviceId = { $in: allowedDeviceIds };
+        }
         if (req.query.tankId) {
             if (tankIds && !tankIds.some((tankId) => tankId.toString() === req.query.tankId)) return res.json({ success: true, filters: { tankId: req.query.tankId }, points: [] });
             readingFilter.tankId = req.query.tankId;
