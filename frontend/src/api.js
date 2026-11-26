@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 function normalizeApiBaseUrl(configuredUrl) {
-    const value = String(configuredUrl || '/api/v1').trim().replace(/\\/+$/, '');
+    let value = String(configuredUrl || '/api/v1').trim();
+    while (value.endsWith('/')) value = value.slice(0, -1);
     if (!value) return '/api/v1';
     if (value === '/api/v1' || value.endsWith('/api/v1')) return value;
     if (value.endsWith('/api')) return value + '/v1';
