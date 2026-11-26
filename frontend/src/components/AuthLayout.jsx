@@ -49,7 +49,7 @@ export function AppNav() {
       </nav>
       <div className="nav-actions">
         <Link to="/login" className="nav-login">Login</Link>
-        <Link to="/register" className="nav-register">Create Account</Link>
+        <Link to="/register" className="nav-login nav-register">Create Account</Link>
         <label className="language-select">
           <span className="sr-only">{t.nav.language}</span>
           <select
