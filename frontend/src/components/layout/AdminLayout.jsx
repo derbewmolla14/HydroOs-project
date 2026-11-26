@@ -23,8 +23,8 @@ const navigation = [
   ["Soil Moisture", "/soil-moisture", "⌁"],
   ["Water Sources", "/water-sources", "◌"],
   ["Devices", "/devices", "▣"],
-  ["Smart Alerts", "/alerts", "⚠"],
-  ["Notifications", "/notifications", "♢"],
+  ["Smart Alerts", "/alerts", "⚠", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
+  ["Notifications", "/notifications", "♢", ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"]],
   [
     "Alert Settings",
     "/alert-settings",
@@ -50,9 +50,12 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unread, setUnread] = useState(0);
-  const allowedNavigation = navigation.filter(
-    ([, , , roles]) => !roles || roles.includes(user?.role),
-  );
+  const dashboardPath = user?.role === "OPERATOR" ? "/home" : "/dashboard";
+  const allowedNavigation = navigation
+    .map(([label, path, icon, roles], index) =>
+      index === 0 ? [label, dashboardPath, icon, roles] : [label, path, icon, roles],
+    )
+    .filter(([, , , roles]) => !roles || roles.includes(user?.role));
   useEffect(() => {
     api
       .get("/notifications")
