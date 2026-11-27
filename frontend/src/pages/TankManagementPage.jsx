@@ -212,6 +212,10 @@ export function TankManagementPage() {
     try {
       const capacity =
         form.shape === "custom" ? form.capacity : calculatedCapacity();
+      const latitudeValue = form.coordinates?.latitude ?? form.latitude;
+      const longitudeValue = form.coordinates?.longitude ?? form.longitude;
+      const latitude = latitudeValue === "" || latitudeValue == null ? null : Number(latitudeValue);
+      const longitude = longitudeValue === "" || longitudeValue == null ? null : Number(longitudeValue);
       const payload = {
         ...form,
         capacity: Number(capacity),
@@ -224,9 +228,9 @@ export function TankManagementPage() {
         currentWaterLevel: Number(form.currentWaterLevel || 0),
         minimumWaterLevel: Number(form.minimumWaterLevel || 0),
         maximumWaterLevel: Number(form.maximumWaterLevel || capacity),
-        latitude: form.coordinates?.latitude === "" ? null : Number(form.coordinates?.latitude ?? form.latitude),
-        longitude: form.coordinates?.longitude === "" ? null : Number(form.coordinates?.longitude ?? form.longitude),
-        coordinates: { latitude: form.coordinates?.latitude === "" ? null : Number(form.coordinates?.latitude ?? form.latitude), longitude: form.coordinates?.longitude === "" ? null : Number(form.coordinates?.longitude ?? form.longitude) },
+        latitude,
+        longitude,
+        coordinates: { latitude, longitude },
         adminLocation: form.adminLocation,
         mapAdded: Boolean(form.mapAdded),
         assignedOperatorId: form.assignedOperatorId || null,
