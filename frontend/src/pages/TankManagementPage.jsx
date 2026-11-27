@@ -14,7 +14,7 @@ import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import SatelliteLocationPicker from "../components/location/SatelliteLocationPicker";
-import { LocationSummary } from "../components/location/LocationSummary";
+import { LocationSummary } from "../components/location/LocationSummary";\nimport TankSatelliteViewer from "../components/location/TankSatelliteViewer";
 
 const emptyForm = {
   organizationId: "",
@@ -151,7 +151,7 @@ export function TankManagementPage() {
             installationDate: tank.installationDate?.slice(0, 10) || "",
             assignedOperatorId:
               tank.assignedOperatorId?._id || tank.assignedOperatorId || "",
-            coordinates: tank.coordinates || { latitude: tank.latitude ?? 11.0849, longitude: tank.longitude ?? 39.7366 },
+            coordinates: tank.coordinates || { latitude: tank.latitude ?? "", longitude: tank.longitude ?? "" },
             adminLocation: tank.adminLocation || { country: "Ethiopia", region: "Amhara", zone: "South Wollo", woreda: "", kebele: "" },
             mapAdded: Boolean(tank.mapAdded),
           }
@@ -321,7 +321,7 @@ export function TankManagementPage() {
             ))}
           </select>
         </div>
-        {state.error && <p className="form-message error">{state.error}</p>}
+        <TankSatelliteViewer />\n        {state.error && <p className="form-message error">{state.error}</p>}
         {state.loading ? (
           <div className="module-empty">Loading verified tank records…</div>
         ) : (
