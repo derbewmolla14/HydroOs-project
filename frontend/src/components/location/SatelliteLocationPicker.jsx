@@ -57,7 +57,7 @@ export function SatelliteLocationPicker({ value, onChange, readOnly = false, def
         {hierarchy && <p className="mt-1 truncate text-xs text-[#78918e]">{hierarchy}</p>}
       </div>
       {!readOnly && <button type="button" className="hydroos-map-trigger" onClick={() => { if (!current.mapAdded) onChange?.({ ...current, mapAdded: true }); setOpen((state) => !state); }}>
-        {current.mapAdded ? <><Satellite size={15}/>{open ? "Hide Satellite Map" : "See Satellite Map"}</> : <><MapPin size={15}/>{open ? "Close Map" : "Add Map"}</>}
+        {open ? <><Satellite size={15}/>Hide Map</> : <><MapPin size={15}/>{current.mapAdded ? "Edit Location" : "Add Map"}</>}
         {open ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
       </button>}
       {readOnly && <span className="rounded-full bg-[#e5f6ef] px-3 py-1.5 text-xs font-bold text-[#176c59]">Saved location</span>}
@@ -71,10 +71,10 @@ export function SatelliteLocationPicker({ value, onChange, readOnly = false, def
             {!readOnly && <button type="button" onClick={() => setLayer((value) => value === "satellite" ? "hybrid" : "satellite")}><Layers size={14}/>{layer === "satellite" ? "Hybrid Labels" : "Satellite Map"}</button>}
             {readOnly && <span>{layer === "satellite" ? "Satellite Map" : "Hybrid Labels"}</span>}
           </div>
-          {hasCoordinates ? <Suspense fallback={<div className="hydroos-map-loading">Loading satellite imagery…</div>}>
-            <SatelliteMapCanvas latitude={latitude} longitude={longitude} onChange={selectMapPoint} layer={layer} readOnly={readOnly}/>
-          </Suspense> : <div className="hydroos-map-loading">No map coordinates are set yet. Enter latitude and longitude to place this tank on the map.</div>}
-          <p className="hydroos-map-help">{readOnly ? "Saved map coordinates" : "Click the map or drag the marker to choose the exact location."}</p>
+          {(hasCoordinates || !readOnly) ? <Suspense fallback={<div className="hydroos-map-loading">Loading satellite imagery…</div>}>
+            <SatelliteMapCanvas latitude={latitude} longitude={longitude} onChange={selectMapPoint} layer={layer} readOnly={readOnly} allowEmpty={!hasCoordinates} />
+          </Suspense> : <div className="hydroos-map-loading">No map coordinates are set yet.</div>}
+          <p className="hydroos-map-help">{readOnly ? "Saved map coordinates" : hasCoordinates ? "Click the map or drag the marker to update the exact location." : "No location is saved yet. Click anywhere on the satellite map to set the location."}</p>
         </div>
         <div className="hydroos-location-fields">
           <h4>Coordinates</h4>
