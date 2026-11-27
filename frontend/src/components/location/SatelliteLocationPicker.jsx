@@ -23,7 +23,7 @@ export function SatelliteLocationPicker({ value, onChange, readOnly = false, def
   const [layer, setLayer] = useState("satellite");
   const current = useMemo(() => normalizeValue(value), [value]);
   const { latitude, longitude } = current.coordinates;
-  const hasCoordinates = Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude));
+  const hasCoordinates = latitude !== "" && latitude !== null && latitude !== undefined && longitude !== "" && longitude !== null && longitude !== undefined && Number.isFinite(Number(latitude)) && Number.isFinite(Number(longitude));
   const hierarchy = ["country", "region", "zone", "woreda", "kebele"]
     .map((key) => current.adminLocation[key]?.trim())
     .filter(Boolean)
