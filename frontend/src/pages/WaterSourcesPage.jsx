@@ -24,7 +24,7 @@ export function WaterSourcesPage() {
 
   async function load() {
     setLoading(true);
-    try { const { data } = await api.get("/water-sources"); setSources(data.sources || []); setError(""); }
+    try { const { data } = await api.get("/sources"); setSources(data.sources || []); setError(""); }
     catch (e) { setError(e.response?.data?.message || "Water sources could not be loaded."); }
     finally { setLoading(false); }
   }
@@ -33,7 +33,7 @@ export function WaterSourcesPage() {
     event.preventDefault(); setSaving(true); setError("");
     try {
       const payload = { ...form, organizationId: role === "SUPER_ADMIN" ? organizationId : user.organizationId };
-      await api.post("/water-sources", payload);
+      await api.post("/sources", payload);
       setForm(initialForm()); setShowForm(false); await load();
     } catch (e) { setError(e.response?.data?.message || "Water source could not be saved."); }
     finally { setSaving(false); }
