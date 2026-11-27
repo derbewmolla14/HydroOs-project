@@ -13,6 +13,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
+import SatelliteLocationPicker from "../components/location/SatelliteLocationPicker";
+import { LocationSummary } from "../components/location/LocationSummary";
 
 const emptyForm = {
   organizationId: "",
@@ -23,8 +25,11 @@ const emptyForm = {
   tankType: "ground",
   capacity: "",
   location: "",
-  latitude: "",
-  longitude: "",
+  latitude: 11.0849,
+  longitude: 39.7366,
+  coordinates: { latitude: 11.0849, longitude: 39.7366 },
+  adminLocation: { country: "Ethiopia", region: "Amhara", zone: "South Wollo", woreda: "", kebele: "" },
+  mapAdded: false,
   installationDate: "",
   assignedOperatorId: "",
   status: "active",
@@ -146,6 +151,9 @@ export function TankManagementPage() {
             installationDate: tank.installationDate?.slice(0, 10) || "",
             assignedOperatorId:
               tank.assignedOperatorId?._id || tank.assignedOperatorId || "",
+            coordinates: tank.coordinates || { latitude: tank.latitude ?? 11.0849, longitude: tank.longitude ?? 39.7366 },
+            adminLocation: tank.adminLocation || { country: "Ethiopia", region: "Amhara", zone: "South Wollo", woreda: "", kebele: "" },
+            mapAdded: Boolean(tank.mapAdded),
           }
         : { ...emptyForm, dimensions: { ...emptyForm.dimensions } },
     );
@@ -215,8 +223,11 @@ export function TankManagementPage() {
         currentWaterLevel: Number(form.currentWaterLevel || 0),
         minimumWaterLevel: Number(form.minimumWaterLevel || 0),
         maximumWaterLevel: Number(form.maximumWaterLevel || capacity),
-        latitude: form.latitude === "" ? null : Number(form.latitude),
-        longitude: form.longitude === "" ? null : Number(form.longitude),
+        latitude: form.coordinates?.latitude === "" ? null : Number(form.coordinates?.latitude ?? form.latitude),
+        longitude: form.coordinates?.longitude === "" ? null : Number(form.coordinates?.longitude ?? form.longitude),
+        coordinates: { latitude: form.coordinates?.latitude === "" ? null : Number(form.coordinates?.latitude ?? form.latitude), longitude: form.coordinates?.longitude === "" ? null : Number(form.coordinates?.longitude ?? form.longitude) },
+        adminLocation: form.adminLocation,
+        mapAdded: Boolean(form.mapAdded),
         assignedOperatorId: form.assignedOperatorId || null,
       };
       if ((user.systemRole || user.role) === "SUPER_ADMIN" && !form._id)
@@ -332,6 +343,7 @@ export function TankManagementPage() {
                     <td>
                       <strong>{tank.name}</strong>
                       <small>{tank.code}</small>
+                      <div className="mt-1"><LocationSummary value={tank}/></div>
                     </td>
                     <td>{tank.tankType}</td>
                     <td>{tank.capacity.toLocaleString()} L</td>
@@ -655,30 +667,12 @@ export function TankManagementPage() {
                           onChange={updateForm}
                         />
                       </label>
-                      <label>
-                        Latitude
-                        <input
-                          type="number"
-                          step="any"
-                          min="-90"
-                          max="90"
-                          name="latitude"
-                          value={form.latitude}
-                          onChange={updateForm}
+                      <div className="form-span-two">
+                        <SatelliteLocationPicker
+                          value={{ coordinates: form.coordinates, adminLocation: form.adminLocation, mapAdded: form.mapAdded }}
+                          onChange={(value) => setForm((current) => ({ ...current, ...value, latitude: value.coordinates.latitude, longitude: value.coordinates.longitude }))}
                         />
-                      </label>
-                      <label>
-                        Longitude
-                        <input
-                          type="number"
-                          step="any"
-                          min="-180"
-                          max="180"
-                          name="longitude"
-                          value={form.longitude}
-                          onChange={updateForm}
-                        />
-                      </label>
+                      </div>
                       <label>
                         Assigned operator
                         <select
@@ -886,6 +880,7 @@ export function TankDetailsPage() {
                 </dl>
               </div>
             </div>
+            {tank.mapAdded && <SatelliteLocationPicker readOnly value={{ coordinates: tank.coordinates || { latitude: tank.latitude, longitude: tank.longitude }, adminLocation: tank.adminLocation, mapAdded: true }} />}
             <div className="detail-card">
               <h3>Description</h3>
               <p>{tank.description || "No description provided."}</p>
