@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import { authenticate, hasTenantAccess, requireRoles } from '../middleware/auth.js';
+import { authenticate, hasTenantAccess, requireRoles, requireServiceAccess } from '../middleware/auth.js';
 import { WaterQuality } from '../models/WaterQuality.js';
 import { Tank } from '../models/Tank.js';
 import { WaterSource } from '../models/WaterSource.js';
@@ -9,6 +9,7 @@ import { recordAudit } from '../services/auditService.js';
 const router = express.Router();
 const managers = ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'];
 router.use(authenticate);
+router.use(requireServiceAccess('water_quality'));
 
 function organizationScope(user, requested) {
     if (user.role === 'SUPER_ADMIN') return requested ? { organizationId: requested } : {};
@@ -47,6 +48,19 @@ router.post('/', requireRoles(...managers, 'OPERATOR'), async (req, res, next) =
         const test = await WaterQuality.create({ ...values, organizationId, recordedBy: req.user.id });
         await recordAudit({ actorUserId: req.user.id, action: 'WATER_QUALITY_RECORDED', resourceType: 'WaterQuality', resourceId: test.id, organizationId, metadata: { washStatus: test.washStatus }, ipAddress: req.ip });
         res.status(201).json({ success: true, test });
+    } catch (error) { next(error); }
+});
+
+router.patch('/:testId', requireRoles(...managers, 'OPERATOR'), async (req, res, next) => {
+    try {
+        const filter = { _id: req.params.testId, ...organizationScope(req.user, req.body.organizationId) };
+        const test = await WaterQuality.findOne(filter);
+        if (!test) return res.status(404).json({ success: false, message: 'Water quality test not found.' });
+        const allowed = ['ph','turbidity','chlorine','tds','temperature','measuredAt','coordinates','adminLocation','measuringDevice','technician','testingMethod','remarks','laboratoryReportUrl'];
+        for (const key of allowed) if (req.body[key] !== undefined) test[key] = req.body[key];
+        await test.save(); // pre-validate hook recalculates washStatus on every update.
+        await recordAudit({ actorUserId: req.user.id, action: 'WATER_QUALITY_UPDATED', resourceType: 'WaterQuality', resourceId: test.id, organizationId: test.organizationId, metadata: { washStatus: test.washStatus }, ipAddress: req.ip });
+        res.json({ success: true, test });
     } catch (error) { next(error); }
 });
 
