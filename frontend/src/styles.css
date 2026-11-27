@@ -2611,3 +2611,8 @@
     }
   }
 }
+
+
+@keyframes hydroosSidebarSubmenuIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.sidebar-submenu-enter { animation: hydroosSidebarSubmenuIn 180ms ease-out both; transform-origin: top; }
+@media (prefers-reduced-motion: reduce) { .sidebar-submenu-enter { animation: none; } }
