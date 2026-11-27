@@ -17,15 +17,15 @@ const navigation = [
   { section: "ADMINISTRATION", label: "Organizations", path: "/organizations", icon: Building2, roles: ["SUPER_ADMIN"], children: [
     ["View Organizations", "/organizations"], ["Add New Organization", "/organizations/new"], ["Organization Settings", "/organizations/settings"],
   ] },
-  { section: "ADMINISTRATION", label: "Users & Management", path: "/users", icon: Users, roles: accessRoles, children: [
+  { section: "ADMINISTRATION", label: "Users", path: "/users", icon: Users, roles: accessRoles, children: [
     ["View & Manage Users", "/users"], ["Create New Admin", "/users/create-admin"], ["User Roles & Permissions", "/users/roles"],
   ] },
   { section: "ADMINISTRATION", label: "Service Activation", path: "/services", icon: Link2, roles: ["SUPER_ADMIN"] },
   { section: "WATER OPERATIONS", label: "Water Tanks", path: "/tanks", icon: Droplets, roles: accessRoles, serviceType: "water_tank", children: [
-    ["Live Tank Levels", "/tanks/level"], ["Add New Tanker", "/tanks/new"], ["Tank History & Logs", "/tanks/history"], ["Tank Hardware Status", "/tanks/hardware"],
+    ["Tank List", "/tanks"], ["+ Add Water Tank", "/tanks/new"], ["Live Tank Levels", "/tanks/level"], ["Tank History & Logs", "/tanks/history"], ["Tank Hardware Status", "/tanks/hardware"],
   ] },
   { section: "WATER OPERATIONS", label: "Irrigation Control", path: "/irrigation", icon: Waves, roles: accessRoles, serviceType: "irrigation", children: [
-    ["Valve Controls", "/irrigation/valves"], ["Irrigation History", "/irrigation/history"], ["Schedules & Automation", "/irrigation/schedules"],
+    ["Controller Overview", "/irrigation"], ["Zone Schedules", "/irrigation/schedules"], ["Valve Controls", "/irrigation/valves"], ["Irrigation History", "/irrigation/history"],
   ] },
   { section: "WATER OPERATIONS", label: "Soil Moisture", path: "/soil-moisture", icon: Leaf, roles: accessRoles, serviceType: "soil_moisture", children: [
     ["Current Sensor Readings", "/soil-moisture/sensors"], ["Moisture History Logs", "/soil-moisture/history"], ["Threshold Configuration", "/soil-moisture/thresholds"],
@@ -34,7 +34,7 @@ const navigation = [
     ["Source Intake Status", "/water-sources/intake"], ["Flow Rate Monitoring", "/water-sources/flow"], ["Source History", "/water-sources/history"],
   ] },
   { section: "WATER OPERATIONS", label: "Water Quality", path: "/water-quality", icon: FlaskConical, roles: accessRoles, serviceType: "water_quality", children: [
-    ["Live Parameters (pH, TDS, Turbidity)", "/water-quality"], ["Quality History Logs", "/water-quality/history"], ["Sensor Calibration", "/water-quality/calibration"],
+    ["Water Tank Measurements", "/water-quality"], ["Water Quality Parameters (pH, Turbidity, Chlorine - WHO/WASH)", "/water-quality"], ["+ Add Water Tank", "/tanks/new"], ["Satellite Map Overview", "/water-quality/map"],
   ] },
 
   { section: "FIELD OPERATIONS", label: "Field Assessment", path: "/field-assessment", icon: ClipboardCheck, roles: accessRoles, children: [
