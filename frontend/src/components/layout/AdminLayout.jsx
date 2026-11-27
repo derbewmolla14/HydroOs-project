@@ -119,6 +119,24 @@ export function AdminLayout({ children, title = "Dashboard" }) {
     };
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileOpen]);
+
   const organizationName = user?.organizationId ? "Your organization" : "Platform overview";
   async function signOut() {
     await logout();
@@ -127,11 +145,11 @@ export function AdminLayout({ children, title = "Dashboard" }) {
 
   return (
     <div className={`admin-shell min-h-screen bg-[#f2f9f7]${collapsed ? " sidebar-collapsed" : ""}`}>
-      <aside className={`admin-sidebar fixed inset-y-0 left-0 z-20 flex w-[246px] flex-col bg-[#0d3b36] text-[#d3ebe5] transition-transform duration-200${mobileOpen ? " mobile-open" : ""}`}>
+      <aside aria-label="Main sidebar" aria-hidden={isMobile && !mobileOpen} className={`admin-sidebar fixed inset-y-0 left-0 z-30 flex w-[246px] flex-col bg-[#0d3b36] text-[#d3ebe5] transition-transform duration-200${mobileOpen ? " mobile-open" : ""}`}>
         <div className="sidebar-brand flex h-[76px] items-center gap-2.5 px-[22px] text-[1.28rem] font-extrabold tracking-[-.05em]">
           <span className="sidebar-logo grid h-[33px] w-[33px] place-items-center rounded-[10px] bg-[#7ce0be] text-[1.18rem] text-[#063d37]">H</span>
           {!collapsed && <span>Hydro<span className="text-[#6de2c0]">OS</span></span>}
-          <button className="mobile-close ml-auto border-0 bg-transparent text-[#c3e6dc]" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={20}/></button>
+          <button className="mobile-close ml-auto grid h-10 w-10 shrink-0 place-items-center rounded-lg border-0 bg-transparent text-[#c3e6dc]" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X size={20}/></button>
         </div>
         <div className="sidebar-section-label px-[23px] pb-2.5 pt-[19px] text-[.64rem] tracking-[.14em] text-[#74ada0]">{!collapsed && "WORKSPACE"}</div>
         <nav className="admin-nav grid flex-1 content-start gap-1 overflow-y-auto px-[11px] pb-3" aria-label="Admin navigation">
@@ -163,7 +181,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
                   {item.children && !collapsed && <div aria-hidden={!isExpanded} inert={!isExpanded} className={"sidebar-submenu ml-[22px] grid gap-1 border-l border-[#47766c] pl-3 " + (isExpanded ? "sidebar-submenu-open" : "")}>
                     {item.children.map(([childLabel, childPath]) => <NavLink key={childLabel} to={childPath}
                       onClick={() => setMobileOpen(false)}
-                      className={({isActive}) => `rounded-lg px-3 py-[8px] text-[.68rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#114b44] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
+                      className={({isActive}) => `min-h-11 rounded-lg px-3 py-3 text-[.72rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#114b44] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
                   </div>}
                 </div>
               );
@@ -182,8 +200,8 @@ export function AdminLayout({ children, title = "Dashboard" }) {
       {mobileOpen && <button className="mobile-overlay" onClick={() => setMobileOpen(false)} aria-label="Close navigation"/>}
       <div className="admin-content ml-[246px] w-[calc(100%-246px)] transition-[margin,width] duration-200">
         <header className="admin-topbar flex h-[76px] items-center border-b border-[#e4ece9] bg-white px-[clamp(20px,3vw,42px)]">
-          <button className="sidebar-toggle grid h-[34px] w-[34px] place-items-center rounded-lg border border-[#dfeae6] bg-white text-[#587a77]"
-            onClick={() => isMobile ? setMobileOpen(true) : setCollapsed((value) => !value)} aria-label="Toggle sidebar">
+          <button className="sidebar-toggle grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-[#dfeae6] bg-white text-[#587a77]" onClick place-items-center rounded-lg border border-[#dfeae6] bg-white text-[#587a77]"
+            onClick={() => isMobile ? setMobileOpen(true) : setCollapsed((value) => !value)} aria-label={isMobile ? "Open navigation menu" : "Toggle sidebar"} aria-expanded={isMobile ? mobileOpen : undefined}>
             {isMobile ? <Menu size={21}/> : collapsed ? <ChevronRight size={21}/> : <ChevronLeft size={21}/>}
           </button>
           <div className="topbar-title ml-[18px] flex flex-col gap-[3px] text-[1.08rem] font-extrabold">
@@ -204,7 +222,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
             </div>
           </div>
         </header>
-        <main className="admin-main min-h-[calc(100vh-76px)] px-[clamp(20px,4vw,54px)] py-[clamp(24px,4vw,45px)]">{children}</main>
+        <main className="admin-main min-h-[calc(100vh-76px)] min-w-0 px-[clamp(14px,4vw,54px)] py-[clamp(20px,4vw,45px)]">{children}</main>
       </div>
     </div>
   );
