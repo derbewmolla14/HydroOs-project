@@ -1,6 +1,6 @@
 import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 
 const markerIcon = L.divIcon({
@@ -17,9 +17,9 @@ function MapController({ center, onSelect, readOnly }) {
   return null;
 }
 
-export default function SatelliteMapCanvas({ latitude, longitude, onChange, layer, readOnly = false }) {
+export default function SatelliteMapCanvas({ latitude, longitude, onChange, layer, readOnly = false, popupTitle, popupDescription }) {
   const center = [Number(latitude), Number(longitude)];
-  return <MapContainer center={center} zoom={14} scrollWheelZoom className="hydroos-leaflet-map">
+  return <MapContainer center={center} zoom={14} scrollWheelZoom className="hydroos-leaflet-map h-[280px] sm:h-[380px] lg:h-[440px]">
     <TileLayer
       attribution='Tiles © <a href="https://www.esri.com/">Esri</a> — Source: Esri, Maxar, Earthstar Geographics'
       url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
