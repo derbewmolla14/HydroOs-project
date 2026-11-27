@@ -32,17 +32,27 @@ export default function TankSatelliteViewer({ className = "" }) {
 
   useEffect(() => {
     let active = true;
-    api.get("/tanks", { params: { limit: 100 } })
-      .then(({ data }) => {
+    async function loadAllTanks() {
+      try {
+        const first = await api.get("/tanks", { params: { limit: 100, page: 1 } });
+        const firstRecords = Array.isArray(first.data.tanks) ? first.data.tanks : [];
+        const pages = Math.max(1, Number(first.data.pagination?.pages || 1));
+        const remaining = await Promise.all(
+          Array.from({ length: Math.max(0, pages - 1) }, (_, index) =>
+            api.get("/tanks", { params: { limit: 100, page: index + 2 } })
+          )
+        );
         if (!active) return;
-        const records = Array.isArray(data.tanks) ? data.tanks : [];
+        const records = [...firstRecords, ...remaining.flatMap(({ data }) => Array.isArray(data.tanks) ? data.tanks : [])];
         setTanks(records);
         setSelectedId((current) => current || records[0]?._id || "");
-      })
-      .catch((e) => {
+      } catch (e) {
         if (active) setError(e.response?.data?.message || "Registered tanks could not be loaded.");
-      })
-      .finally(() => { if (active) setLoading(false); });
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    loadAllTanks();
     return () => { active = false; };
   }, []);
 
@@ -53,7 +63,8 @@ export default function TankSatelliteViewer({ className = "" }) {
       .some((value) => String(value || "").toLowerCase().includes(term)));
   }, [tanks, search]);
 
-  const selected = tanks.find((tank) => tank._id === selectedId) || null;
+  const visibleSelectedId = filtered.some((tank) => tank._id === selectedId) ? selectedId : (filtered[0]?._id || "");
+  const selected = tanks.find((tank) => tank._id === visibleSelectedId) || null;
   const coordinates = getTankCoordinates(selected);
 
   return <section className={`overflow-hidden rounded-2xl border border-[#dcebe5] bg-white shadow-sm ${className}`}>
@@ -73,7 +84,7 @@ export default function TankSatelliteViewer({ className = "" }) {
         </label>
         <label className="grid gap-1 text-xs font-bold text-[#67827c]">
           Select registered tank
-          <select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} disabled={loading || !filtered.length} className="min-h-11 w-full rounded-xl border border-[#dce9e4] bg-white px-3 text-sm text-[#214f4b]">
+          <select value={visibleSelectedId} onChange={(event) => setSelectedId(event.target.value)} disabled={loading || !filtered.length} className="min-h-11 w-full rounded-xl border border-[#dce9e4] bg-white px-3 text-sm text-[#214f4b]">
             {filtered.length ? filtered.map((tank) => <option key={tank._id} value={tank._id}>{tank.name}{tank.code ? ` · ${tank.code}` : ""}</option>) : <option value="">{loading ? "Loading tanks…" : "No matching tanks"}</option>}
           </select>
         </label>
