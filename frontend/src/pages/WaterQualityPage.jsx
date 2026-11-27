@@ -5,7 +5,7 @@ import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import SatelliteLocationPicker from "../components/location/SatelliteLocationPicker";
-import { LocationSummary } from "../components/location/LocationSummary";
+import { LocationSummary } from "../components/location/LocationSummary";\nimport TankSatelliteViewer from "../components/location/TankSatelliteViewer";
 
 const emptyReading = { targetId: "", targetType: "tank", ph: "", turbidity: "", chlorine: "", technician: "", testingMethod: "", remarks: "" };
 const statusText = (status) => status === "Unsafe - HWTS Required" ? "Unsafe - HWTS Recommended" : status || "Needs Attention";
@@ -130,7 +130,7 @@ export function WaterQualityPage() {
         <Link to="/tanks/new" className="inline-flex items-center gap-2 rounded-lg border border-[#cfe3da] bg-white px-4 py-2.5 text-sm font-bold text-[#176c59]"><Plus size={16}/>Add Water Tank</Link>
         <button onClick={() => setExpanded(v => v === "__all" ? "" : "__all")} className="inline-flex items-center gap-2 rounded-lg border border-[#cfe3da] bg-white px-4 py-2.5 text-sm font-bold text-[#176c59]"><MapPin size={16}/>See Satellite Map</button>
       </div>
-      {showForm && <form onSubmit={submit} className="rounded-2xl border border-[#dcebe5] bg-white p-5 shadow-sm">
+      <TankSatelliteViewer />\n      {showForm && <form onSubmit={submit} className="rounded-2xl border border-[#dcebe5] bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-lg font-extrabold text-[#214f4b]">Record a water quality test</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {role === "SUPER_ADMIN" && <label className="grid gap-1 text-xs font-semibold text-[#67827c]">Organization<select required value={organizationId} onChange={e=>setOrganizationId(e.target.value)} className="rounded-lg border p-2.5 text-sm"><option value="">Select organization</option>{organizations.map(o=><option key={o._id} value={o._id}>{o.name}</option>)}</select></label>}
