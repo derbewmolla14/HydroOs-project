@@ -145,7 +145,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
 
   return (
     <div className={`admin-shell min-h-screen bg-[#f2f9f7]${collapsed ? " sidebar-collapsed" : ""}`}>
-      <aside aria-label="Main sidebar" aria-hidden={isMobile && !mobileOpen} className={`admin-sidebar fixed inset-y-0 left-0 z-30 flex w-[min(86vw,300px)] max-w-full flex-col bg-[#0d3b36] text-[#d3ebe5] transition-transform duration-200${mobileOpen ? " mobile-open" : ""}`}>
+      <aside aria-label="Main sidebar" aria-hidden={isMobile && !mobileOpen} className={`admin-sidebar fixed inset-y-0 left-0 z-30 flex w-[246px] flex-col bg-[#0d3b36] text-[#d3ebe5] transition-transform duration-200${mobileOpen ? " mobile-open" : ""}`}>
         <div className="sidebar-brand flex h-[76px] items-center gap-2.5 px-[22px] text-[1.28rem] font-extrabold tracking-[-.05em]">
           <span className="sidebar-logo grid h-[33px] w-[33px] place-items-center rounded-[10px] bg-[#7ce0be] text-[1.18rem] text-[#063d37]">H</span>
           {!collapsed && <span>Hydro<span className="text-[#6de2c0]">OS</span></span>}
@@ -181,7 +181,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
                   {item.children && !collapsed && <div aria-hidden={!isExpanded} inert={!isExpanded} className={"sidebar-submenu ml-[22px] grid gap-1 border-l border-[#47766c] pl-3 " + (isExpanded ? "sidebar-submenu-open" : "")}>
                     {item.children.map(([childLabel, childPath]) => <NavLink key={childLabel} to={childPath}
                       onClick={() => setMobileOpen(false)}
-                      className={({isActive}) => `rounded-lg px-3 py-[8px] text-[.68rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#114b44] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
+                      className={({isActive}) => `min-h-11 rounded-lg px-3 py-3 text-[.72rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#114b44] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
                   </div>}
                 </div>
               );
