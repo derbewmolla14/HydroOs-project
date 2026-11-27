@@ -15,6 +15,7 @@ import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import SatelliteLocationPicker from "../components/location/SatelliteLocationPicker";
 import { LocationSummary } from "../components/location/LocationSummary";
+import TankSatelliteViewer from "../components/location/TankSatelliteViewer";
 
 const emptyForm = {
   organizationId: "",
@@ -25,9 +26,9 @@ const emptyForm = {
   tankType: "ground",
   capacity: "",
   location: "",
-  latitude: 11.0849,
-  longitude: 39.7366,
-  coordinates: { latitude: 11.0849, longitude: 39.7366 },
+  latitude: "",
+  longitude: "",
+  coordinates: { latitude: "", longitude: "" },
   adminLocation: { country: "Ethiopia", region: "Amhara", zone: "South Wollo", woreda: "", kebele: "" },
   mapAdded: false,
   installationDate: "",
@@ -151,7 +152,7 @@ export function TankManagementPage() {
             installationDate: tank.installationDate?.slice(0, 10) || "",
             assignedOperatorId:
               tank.assignedOperatorId?._id || tank.assignedOperatorId || "",
-            coordinates: tank.coordinates || { latitude: tank.latitude ?? 11.0849, longitude: tank.longitude ?? 39.7366 },
+            coordinates: tank.coordinates || { latitude: tank.latitude ?? "", longitude: tank.longitude ?? "" },
             adminLocation: tank.adminLocation || { country: "Ethiopia", region: "Amhara", zone: "South Wollo", woreda: "", kebele: "" },
             mapAdded: Boolean(tank.mapAdded),
           }
@@ -211,6 +212,10 @@ export function TankManagementPage() {
     try {
       const capacity =
         form.shape === "custom" ? form.capacity : calculatedCapacity();
+      const latitudeValue = form.coordinates?.latitude ?? form.latitude;
+      const longitudeValue = form.coordinates?.longitude ?? form.longitude;
+      const latitude = latitudeValue === "" || latitudeValue == null ? null : Number(latitudeValue);
+      const longitude = longitudeValue === "" || longitudeValue == null ? null : Number(longitudeValue);
       const payload = {
         ...form,
         capacity: Number(capacity),
@@ -223,9 +228,9 @@ export function TankManagementPage() {
         currentWaterLevel: Number(form.currentWaterLevel || 0),
         minimumWaterLevel: Number(form.minimumWaterLevel || 0),
         maximumWaterLevel: Number(form.maximumWaterLevel || capacity),
-        latitude: form.coordinates?.latitude === "" ? null : Number(form.coordinates?.latitude ?? form.latitude),
-        longitude: form.coordinates?.longitude === "" ? null : Number(form.coordinates?.longitude ?? form.longitude),
-        coordinates: { latitude: form.coordinates?.latitude === "" ? null : Number(form.coordinates?.latitude ?? form.latitude), longitude: form.coordinates?.longitude === "" ? null : Number(form.coordinates?.longitude ?? form.longitude) },
+        latitude,
+        longitude,
+        coordinates: { latitude, longitude },
         adminLocation: form.adminLocation,
         mapAdded: Boolean(form.mapAdded),
         assignedOperatorId: form.assignedOperatorId || null,
@@ -321,7 +326,7 @@ export function TankManagementPage() {
             ))}
           </select>
         </div>
-        {state.error && <p className="form-message error">{state.error}</p>}
+        <TankSatelliteViewer />\n        {state.error && <p className="form-message error">{state.error}</p>}
         {state.loading ? (
           <div className="module-empty">Loading verified tank records…</div>
         ) : (

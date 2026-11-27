@@ -5,7 +5,7 @@ import "./satellite-location.css";
 const SatelliteMapCanvas = lazy(() => import("./SatelliteMapCanvas"));
 
 const DEFAULT_LOCATION = {
-  coordinates: { latitude: 11.0849, longitude: 39.7366 },
+  coordinates: { latitude: "", longitude: "" },
   adminLocation: { country: "Ethiopia", region: "Amhara", zone: "South Wollo", woreda: "", kebele: "" },
   mapAdded: false,
 };
@@ -73,7 +73,7 @@ export function SatelliteLocationPicker({ value, onChange, readOnly = false, def
           </div>
           {hasCoordinates ? <Suspense fallback={<div className="hydroos-map-loading">Loading satellite imagery…</div>}>
             <SatelliteMapCanvas latitude={latitude} longitude={longitude} onChange={selectMapPoint} layer={layer} readOnly={readOnly}/>
-          </Suspense> : <div className="hydroos-map-loading">Enter valid latitude and longitude to show the map.</div>}
+          </Suspense> : <div className="hydroos-map-loading">No map coordinates are set yet. Enter latitude and longitude to place this tank on the map.</div>}
           <p className="hydroos-map-help">{readOnly ? "Saved map coordinates" : "Click the map or drag the marker to choose the exact location."}</p>
         </div>
         <div className="hydroos-location-fields">
@@ -86,7 +86,7 @@ export function SatelliteLocationPicker({ value, onChange, readOnly = false, def
           <label>Zone<input value={current.adminLocation.zone} disabled={readOnly} onChange={(event) => updateAdmin("zone", event.target.value)}/></label>
           <label>Woreda<input value={current.adminLocation.woreda} disabled={readOnly} placeholder="e.g. Kombolcha / Kalu" onChange={(event) => updateAdmin("woreda", event.target.value)}/></label>
           <label>Kebele<input value={current.adminLocation.kebele} disabled={readOnly} onChange={(event) => updateAdmin("kebele", event.target.value)}/></label>
-          <div className="hydroos-coordinate-readout"><span>Selected coordinates</span><strong>{Number(latitude).toFixed(6)}, {Number(longitude).toFixed(6)}</strong></div>
+          <div className="hydroos-coordinate-readout"><span>Selected coordinates</span><strong>{hasCoordinates ? `${Number(latitude).toFixed(6)}, ${Number(longitude).toFixed(6)}` : "Not set yet"}</strong></div>
         </div>
       </div>
     </>}
