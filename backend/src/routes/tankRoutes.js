@@ -69,6 +69,11 @@ router.patch('/:tankId', requireRoles('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_
     } catch (error) { if (error.code === 11000) error.statusCode = 409; next(error); }
 });
 
+router.put('/:tankId', requireRoles('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'), async (req, res, next) => {
+    req.method = 'PATCH';
+    next();
+}, (req, res, next) => router.handle({ ...req, url: req.baseUrl + req.path }, res, next));
+
 router.delete('/:tankId', requireRoles('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'), async (req, res, next) => {
     try {
         if (!canManageTanks(req.user)) return res.status(403).json({ success: false, message: 'Tank management permission is required.' });
