@@ -12,6 +12,7 @@ const initialForm = () => ({ name: "", code: "", sourceType: "spring", descripti
 export function WaterSourcesPage() {
   const { user } = useAuth();
   const role = user?.systemRole || user?.role;
+  const canManage = ["SUPER_ADMIN", "ORGANIZATION_ADMIN", "SUB_ADMIN"].includes(role);
   const [sources, setSources] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [form, setForm] = useState(initialForm);
@@ -43,7 +44,7 @@ export function WaterSourcesPage() {
     <section className="space-y-5">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div><p className="dashboard-kicker">HydroOS water infrastructure</p><h1 className="text-3xl font-extrabold text-[#173c3d]">Water sources</h1><p className="mt-2 text-sm text-[#78918e]">Register springs, boreholes, rivers, wells and other supply points with verified map locations.</p></div>
-        <div className="flex gap-2"><button type="button" onClick={load} className="rounded-lg border border-[#dcebe5] bg-white px-3 py-2 text-sm font-bold text-[#315d56]"><RefreshCw size={15}/></button><button type="button" onClick={() => setShowForm(v => !v)} className="inline-flex items-center gap-2 rounded-lg bg-[#0d6655] px-4 py-2.5 text-sm font-bold text-white"><Plus size={16}/>Register source</button></div>
+        <div className="flex gap-2"><button type="button" onClick={load} className="rounded-lg border border-[#dcebe5] bg-white px-3 py-2 text-sm font-bold text-[#315d56]"><RefreshCw size={15}/></button>{canManage && <button type="button" onClick={() => setShowForm(v => !v)} className="inline-flex items-center gap-2 rounded-lg bg-[#0d6655] px-4 py-2.5 text-sm font-bold text-white"><Plus size={16}/>Register source</button>}</div>
       </header>
       {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       {showForm && <form onSubmit={save} className="rounded-xl border border-[#dcebe5] bg-white p-5 shadow-sm">
