@@ -19,8 +19,10 @@ const qualityStatus = ({ ph, turbidity, chlorine }) => {
 const latestByTarget = (tests) => {
   const map = new Map();
   tests.forEach(test => {
-    const id = test.tankId?._id || test.tankId || test.waterSourceId?._id || test.waterSourceId;
-    if (id && !map.has(String(id))) map.set(String(id), test);
+    const isTank = Boolean(test.tankId);
+    const id = isTank ? (test.tankId?._id || test.tankId) : (test.waterSourceId?._id || test.waterSourceId);
+    const key = (isTank ? "tank:" : "source:") + id;
+    if (id && !map.has(key)) map.set(key, test);
   });
   return map;
 };
@@ -65,12 +67,12 @@ export function WaterQualityPage() {
 
   const latest = useMemo(() => latestByTarget(tests), [tests]);
   const rows = useMemo(() => [
-    ...tanks.map(item => ({ ...item, kind: "tank", displayName: item.name, targetId: item._id, reading: latest.get(String(item._id)) })),
-    ...sources.map(item => ({ ...item, kind: "source", displayName: item.name, targetId: item._id, reading: latest.get(String(item._id)) }))
+    ...tanks.map(item => ({ ...item, kind: "tank", displayName: item.name, targetId: item._id, reading: latest.get("tank:" + item._id) })),
+    ...sources.map(item => ({ ...item, kind: "source", displayName: item.name, targetId: item._id, reading: latest.get("source:" + item._id) }))
   ].filter(item => filter === "all" || item.kind === filter), [tanks, sources, latest, filter]);
 
   const summary = useMemo(() => {
-    const values = tests.slice(0, 100);
+    const values = Array.from(latestByTarget(tests).values());
     const pH = values.find(x => x.ph !== null && x.ph !== undefined);
     const turbidity = values.find(x => x.turbidity !== null && x.turbidity !== undefined);
     const chlorine = values.find(x => x.chlorine !== null && x.chlorine !== undefined);
