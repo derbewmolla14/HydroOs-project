@@ -36,6 +36,10 @@ const navigation = [
   { section: "WATER OPERATIONS", label: "Water Quality", path: "/water-quality", icon: FlaskConical, roles: accessRoles, serviceType: "water_quality", children: [
     ["Live Parameters (pH, TDS, Turbidity)", "/water-quality"], ["Quality History Logs", "/water-quality/history"], ["Sensor Calibration", "/water-quality/calibration"],
   ] },
+
+  { section: "FIELD OPERATIONS", label: "Field Assessment", path: "/field-assessment", icon: ClipboardCheck, roles: accessRoles, children: [
+    ["New Field Assessment Form", "/field-assessment"], ["Submitted Assessments & Map", "/field-assessment/submitted"],
+  ] },
   { section: "DEVICE & ALERTS", label: "Devices", path: "/devices", icon: Cpu, roles: accessRoles, children: [
     ["Connected Hardware List", "/devices"], ["Register New Device", "/devices/register"], ["Device Diagnostics", "/devices/diagnostics"],
   ] },
