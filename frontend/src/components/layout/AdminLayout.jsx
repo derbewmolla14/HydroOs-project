@@ -34,7 +34,7 @@ const navigation = [
     ["Source Intake Status", "/water-sources/intake"], ["Flow Rate Monitoring", "/water-sources/flow"], ["Source History", "/water-sources/history"],
   ] },
   { section: "WATER OPERATIONS", label: "Water Quality", path: "/water-quality", icon: FlaskConical, roles: accessRoles, serviceType: "water_quality", children: [
-    ["Water Tank Measurements", "/water-quality"], ["Water Quality Parameters (pH, Turbidity, Chlorine - WHO/WASH)", "/water-quality"], ["+ Add Water Tank", "/tanks/new"], ["Satellite Map Overview", "/water-quality/map"],
+    ["Water Tank Measurements", "/water-quality/history"], ["Water Quality Parameters (pH, Turbidity, Chlorine - WHO/WASH)", "/water-quality"], ["+ Add Water Tank", "/tanks/new"], ["Satellite Map Overview", "/water-quality/map"],
   ] },
 
   { section: "FIELD OPERATIONS", label: "Field Assessment", path: "/field-assessment", icon: ClipboardCheck, roles: accessRoles, children: [
@@ -161,7 +161,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
                     </button>}
                   </div>
                   {item.children && !collapsed && <div aria-hidden={!isExpanded} inert={!isExpanded} className={"sidebar-submenu ml-[22px] grid gap-1 border-l border-[#47766c] pl-3 " + (isExpanded ? "sidebar-submenu-open" : "")}>
-                    {item.children.map(([childLabel, childPath]) => <NavLink key={childPath} to={childPath}
+                    {item.children.map(([childLabel, childPath]) => <NavLink key={childLabel} to={childPath}
                       onClick={() => setMobileOpen(false)}
                       className={({isActive}) => `rounded-lg px-3 py-[8px] text-[.68rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#114b44] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
                   </div>}
