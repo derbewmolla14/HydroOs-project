@@ -96,8 +96,8 @@ export function App() {
             </Route>
             <Route path="/field-assessment" element={<AdminModulePage />} />
             <Route path="/field-assessment/submitted" element={<AdminModulePage />} />
-            <Route path="/water-quality/map" element={<AdminModulePage />} />
             <Route element={<ProtectedRoute serviceType="water_quality" />}>
+              <Route path="/water-quality/map" element={<AdminModulePage />} />
               <Route path="/water-quality" element={<AdminModulePage />} />
               <Route path="/water-quality/history" element={<AdminModulePage />} />
               <Route path="/water-quality/calibration" element={<AdminModulePage />} />
