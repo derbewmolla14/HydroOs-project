@@ -35,7 +35,9 @@ export default function SatelliteMapCanvas({ latitude, longitude, onChange, laye
       icon={markerIcon}
       draggable={!readOnly}
       eventHandlers={{ dragend(event) { if (!readOnly) onChange(event.target.getLatLng()); } }}
-    />
+    >
+      {(popupTitle || popupDescription) && <Popup><strong>{popupTitle || "Selected location"}</strong>{popupDescription && <div>{popupDescription}</div>}<div>{Number(latitude).toFixed(6)}, {Number(longitude).toFixed(6)}</div></Popup>}
+    </Marker>
     <MapController center={center} onSelect={onChange} readOnly={readOnly}/>
   </MapContainer>;
 }
