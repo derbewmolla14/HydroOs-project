@@ -232,7 +232,7 @@ export function TankManagementPage() {
         longitude,
         coordinates: { latitude, longitude },
         adminLocation: form.adminLocation,
-        mapAdded: Boolean(form.mapAdded),
+        mapAdded: Boolean(form.mapAdded || (latitude !== null && longitude !== null)),
         assignedOperatorId: form.assignedOperatorId || null,
       };
       if ((user.systemRole || user.role) === "SUPER_ADMIN" && !form._id)
@@ -326,7 +326,8 @@ export function TankManagementPage() {
             ))}
           </select>
         </div>
-        <TankSatelliteViewer />\n        {state.error && <p className="form-message error">{state.error}</p>}
+        <TankSatelliteViewer />
+        {state.error && <p className="form-message error">{state.error}</p>}
         {state.loading ? (
           <div className="module-empty">Loading verified tank records…</div>
         ) : (
