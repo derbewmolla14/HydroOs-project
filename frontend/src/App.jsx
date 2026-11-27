@@ -22,6 +22,8 @@ import { PasswordChangePage } from "./pages/PasswordChangePage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { OrganizationsPage } from "./pages/OrganizationsPage";
 import { ServiceManagementPage } from "./pages/ServiceManagementPage";
+import { WaterSourcesPage } from "./pages/WaterSourcesPage";
+import { FieldAssessmentPage } from "./pages/FieldAssessmentPage";
 
 const authenticatedRoles = [
   "SUPER_ADMIN",
@@ -89,13 +91,13 @@ export function App() {
               <Route path="/soil-moisture/history" element={<AdminModulePage />} />
             </Route>
             <Route element={<ProtectedRoute serviceType="water_source" />}>
-              <Route path="/water-sources" element={<AdminModulePage />} />
+              <Route path="/water-sources" element={<WaterSourcesPage />} />
               <Route path="/water-sources/intake" element={<AdminModulePage />} />
               <Route path="/water-sources/flow" element={<AdminModulePage />} />
               <Route path="/water-sources/history" element={<AdminModulePage />} />
             </Route>
-            <Route path="/field-assessment" element={<AdminModulePage />} />
-            <Route path="/field-assessment/submitted" element={<AdminModulePage />} />
+            <Route path="/field-assessment" element={<FieldAssessmentPage />} />
+            <Route path="/field-assessment/submitted" element={<FieldAssessmentPage />} />
             <Route element={<ProtectedRoute serviceType="water_quality" />}>
               <Route path="/water-quality/map" element={<AdminModulePage />} />
               <Route path="/water-quality" element={<AdminModulePage />} />
