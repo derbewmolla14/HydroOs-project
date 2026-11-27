@@ -56,7 +56,7 @@ export function SatelliteLocationPicker({ value, onChange, readOnly = false, def
         <strong className="flex items-center gap-2 text-sm text-[#174c45]"><MapPin size={16}/> Satellite location</strong>
         {hierarchy && <p className="mt-1 truncate text-xs text-[#78918e]">{hierarchy}</p>}
       </div>
-      {!readOnly && <button type="button" className="hydroos-map-trigger" onClick={() => setOpen((state) => !state)}>
+      {!readOnly && <button type="button" className="hydroos-map-trigger" onClick={() => { if (!current.mapAdded) onChange?.({ ...current, mapAdded: true }); setOpen((state) => !state); }}>
         {current.mapAdded ? <><Satellite size={15}/>{open ? "Hide Satellite Map" : "See Satellite Map"}</> : <><MapPin size={15}/>{open ? "Close Map" : "Add Map"}</>}
         {open ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
       </button>}
