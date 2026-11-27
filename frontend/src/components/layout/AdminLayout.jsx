@@ -69,6 +69,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [unread, setUnread] = useState(0);
   const [expanded, setExpanded] = useState({});
   const systemRole = user?.systemRole || user?.role;
@@ -99,6 +100,13 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const activeGroups = new Set(allowedNavigation
     .filter((item) => item.children?.some(([, path]) => activePath === path || (path !== item.path && activePath.startsWith(path + "/"))))
     .map((item) => item.path));
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobile(window.innerWidth < 800);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
 
   useEffect(() => {
     api.get("/notifications").then(({ data }) => setUnread(data.unread)).catch(() => {});
@@ -175,8 +183,8 @@ export function AdminLayout({ children, title = "Dashboard" }) {
       <div className="admin-content ml-[246px] w-[calc(100%-246px)] transition-[margin,width] duration-200">
         <header className="admin-topbar flex h-[76px] items-center border-b border-[#e4ece9] bg-white px-[clamp(20px,3vw,42px)]">
           <button className="sidebar-toggle grid h-[34px] w-[34px] place-items-center rounded-lg border border-[#dfeae6] bg-white text-[#587a77]"
-            onClick={() => window.innerWidth < 800 ? setMobileOpen(true) : setCollapsed((value) => !value)} aria-label="Toggle sidebar">
-            {window.innerWidth < 800 ? <Menu size={21}/> : collapsed ? <ChevronRight size={21}/> : <ChevronLeft size={21}/>}
+            onClick={() => isMobile ? setMobileOpen(true) : setCollapsed((value) => !value)} aria-label="Toggle sidebar">
+            {isMobile ? <Menu size={21}/> : collapsed ? <ChevronRight size={21}/> : <ChevronLeft size={21}/>}
           </button>
           <div className="topbar-title ml-[18px] flex flex-col gap-[3px] text-[1.08rem] font-extrabold">
             <span>{title}</span><small className="text-[.67rem] font-medium text-[#86a19d]">{organizationName}</small>
