@@ -17,8 +17,11 @@ function MapController({ center, onSelect, readOnly }) {
   return null;
 }
 
-export default function SatelliteMapCanvas({ latitude, longitude, onChange, layer, readOnly = false, popupTitle, popupDescription }) {
-  const center = [Number(latitude), Number(longitude)];
+export default function SatelliteMapCanvas({ latitude, longitude, onChange, layer, readOnly = false, popupTitle, popupDescription, allowEmpty = false }) {
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  const hasCoordinates = latitude !== "" && latitude !== null && latitude !== undefined && longitude !== "" && longitude !== null && longitude !== undefined && Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+  const center = hasCoordinates ? [lat, lng] : [9.145, 40.489];
   return <MapContainer center={center} zoom={14} scrollWheelZoom className="hydroos-leaflet-map h-[280px] sm:h-[380px] lg:h-[440px]">
     <TileLayer
       attribution='Tiles © <a href="https://www.esri.com/">Esri</a> — Source: Esri, Maxar, Earthstar Geographics'
@@ -30,14 +33,14 @@ export default function SatelliteMapCanvas({ latitude, longitude, onChange, laye
       url="https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}"
       maxZoom={19}
     />}
-    <Marker
+    {hasCoordinates && <Marker
       position={center}
       icon={markerIcon}
       draggable={!readOnly}
       eventHandlers={{ dragend(event) { if (!readOnly) onChange(event.target.getLatLng()); } }}
     >
       {(popupTitle || popupDescription) && <Popup><strong>{popupTitle || "Selected location"}</strong>{popupDescription && <div>{popupDescription}</div>}<div>{Number(latitude).toFixed(6)}, {Number(longitude).toFixed(6)}</div></Popup>}
-    </Marker>
+    </Marker>}
     <MapController center={center} onSelect={onChange} readOnly={readOnly}/>
   </MapContainer>;
 }
