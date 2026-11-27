@@ -19,6 +19,9 @@ import { userRoutes } from './routes/userRoutes.js';
 import { exportRoutes } from './routes/exportRoutes.js';
 import { serviceRoutes } from './routes/serviceRoutes.js';
 import { waterLevelRoutes } from './routes/waterLevelRoutes.js';
+import { waterQualityRoutes } from './routes/waterQualityRoutes.js';
+import { fieldAssessmentRoutes } from './routes/fieldAssessmentRoutes.js';
+import { sourceRoutes } from './routes/sourceRoutes.js';
 
 const currentFile = fileURLToPath(import.meta.url);
 const srcDirectory = path.dirname(currentFile);
@@ -64,7 +67,16 @@ export function createApp(io) {
     apiV1.use('/notifications', notificationRoutes);
     apiV1.use('/exports', exportRoutes);
     apiV1.use('/services', serviceRoutes);
+    apiV1.use('/water-quality', waterQualityRoutes);
+    apiV1.use('/field-assessments', fieldAssessmentRoutes);
+    apiV1.use('/sources', sourceRoutes);
     app.use('/api/v1', apiV1);
+
+    // Backward-compatible aliases for clients using the unversioned API paths.
+    app.use('/api/tanks', tankRoutes);
+    app.use('/api/sources', sourceRoutes);
+    app.use('/api/water-quality', waterQualityRoutes);
+    app.use('/api/field-assessments', fieldAssessmentRoutes);
 
     registerLegacyRoutes(app, io, projectRoot);
 
