@@ -160,7 +160,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
                       {isExpanded ? <ChevronDown size={15}/> : <ChevronRight size={15}/>}
                     </button>}
                   </div>
-                  {item.children && !collapsed && isExpanded && <div className="sidebar-submenu-enter ml-[22px] mb-2 mt-1 grid gap-1 border-l border-[#47766c] pl-3">
+                  {item.children && !collapsed && <div aria-hidden={!isExpanded} inert={!isExpanded} className={"sidebar-submenu ml-[22px] grid gap-1 border-l border-[#47766c] pl-3 " + (isExpanded ? "sidebar-submenu-open" : "")}>
                     {item.children.map(([childLabel, childPath]) => <NavLink key={childPath} to={childPath}
                       onClick={() => setMobileOpen(false)}
                       className={({isActive}) => `rounded-lg px-3 py-[8px] text-[.68rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#14554b] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
