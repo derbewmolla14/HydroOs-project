@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 import { Tank } from '../models/Tank.js';
 import { User } from '../models/User.js';
+import { normalizeLocationInput } from '../models/locationSchema.js';
 
-export const tankFields = ['name', 'code', 'shape', 'dimensions', 'tankType', 'capacity', 'location', 'latitude', 'longitude', 'installationDate', 'assignedOperatorId', 'assignedUserIds', 'status', 'description', 'currentWaterLevel', 'minimumWaterLevel', 'maximumWaterLevel', 'lastMeasuredAt'];
+export const tankFields = ['name', 'code', 'shape', 'dimensions', 'tankType', 'capacity', 'location', 'latitude', 'longitude', 'installationDate', 'assignedOperatorId', 'assignedUserIds', 'status', 'description', 'currentWaterLevel', 'minimumWaterLevel', 'maximumWaterLevel', 'lastMeasuredAt', 'coordinates', 'adminLocation', 'mapAdded', 'geoLocation'];
 export const managerRoles = ['SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'];
 
 export function canManageTanks(user) {
@@ -23,6 +24,9 @@ export function serializeTank(tank) {
 
 export async function assertTankInput(input, { organizationId, tankId } = {}) {
     const values = Object.fromEntries(tankFields.filter((field) => input[field] !== undefined).map((field) => [field, input[field]]));
+    if (input.coordinates !== undefined || input.adminLocation !== undefined || input.mapAdded !== undefined || input.latitude !== undefined || input.longitude !== undefined) {
+        Object.assign(values, normalizeLocationInput(input));
+    }
     if (values.code) values.code = String(values.code).trim().toUpperCase();
     if (values.name !== undefined) values.name = String(values.name).trim();
     if (values.capacity !== undefined) values.capacity = Number(values.capacity);

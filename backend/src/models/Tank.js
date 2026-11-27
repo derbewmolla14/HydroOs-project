@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { locationFields } from './locationSchema.js';
 
 const tankSchema = new mongoose.Schema({
     organizationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
@@ -16,6 +17,7 @@ const tankSchema = new mongoose.Schema({
     location: { type: String, trim: true, default: '' },
     latitude: { type: Number, min: -90, max: 90, default: null },
     longitude: { type: Number, min: -180, max: 180, default: null },
+    ...locationFields,
     installationDate: { type: Date, default: null },
     assignedOperatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     status: { type: String, enum: ['active', 'suspended', 'deactivated'], default: 'active' },
@@ -29,6 +31,7 @@ const tankSchema = new mongoose.Schema({
 
 tankSchema.index({ organizationId: 1, code: 1 }, { unique: true });
 tankSchema.index({ organizationId: 1, assignedUserIds: 1 });
+tankSchema.index({ geoLocation: '2dsphere' });
 tankSchema.set('toJSON', { virtuals: true });
 tankSchema.set('toObject', { virtuals: true });
 tankSchema.virtual('remainingWaterVolume').get(function remainingWaterVolume() {
