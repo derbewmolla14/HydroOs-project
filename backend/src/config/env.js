@@ -16,7 +16,9 @@ const parseOrigins = () => {
         process.env.CLIENT_ORIGINS,
         process.env.CLIENT_ORIGIN,
         process.env.CORS_ORIGIN,
-        process.env.FRONTEND_URL
+        process.env.FRONTEND_URL,
+        process.env.HYDROOS_FRONTEND_URL,
+        process.env.VERCEL_URL
     ].filter(Boolean).flatMap((value) => value.split(','));
 
     const defaultOrigins = [
@@ -28,7 +30,10 @@ const parseOrigins = () => {
     ];
 
     return [...new Set([...configuredOrigins, ...defaultOrigins]
-        .map((origin) => origin.trim().replace(/\/$/, ''))
+        .map((origin) => {
+            const value = origin.trim().replace(/\/$/, '');
+            return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+        })
         .filter(Boolean))];
 };
 
