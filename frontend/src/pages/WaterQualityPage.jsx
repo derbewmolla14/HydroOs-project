@@ -5,7 +5,8 @@ import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import SatelliteLocationPicker from "../components/location/SatelliteLocationPicker";
-import { LocationSummary } from "../components/location/LocationSummary";\nimport TankSatelliteViewer from "../components/location/TankSatelliteViewer";
+import { LocationSummary } from "../components/location/LocationSummary";
+import TankSatelliteViewer from "../components/location/TankSatelliteViewer";
 
 const emptyReading = { targetId: "", targetType: "tank", ph: "", turbidity: "", chlorine: "", technician: "", testingMethod: "", remarks: "" };
 const statusText = (status) => status === "Unsafe - HWTS Required" ? "Unsafe - HWTS Recommended" : status || "Needs Attention";
