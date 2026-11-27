@@ -2616,3 +2616,8 @@
 @keyframes hydroosSidebarSubmenuIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 .sidebar-submenu-enter { animation: hydroosSidebarSubmenuIn 180ms ease-out both; transform-origin: top; }
 @media (prefers-reduced-motion: reduce) { .sidebar-submenu-enter { animation: none; } }
+
+
+.sidebar-submenu { max-height: 0; opacity: 0; overflow: hidden; margin-top: 0; margin-bottom: 0; transition: max-height 260ms ease, opacity 180ms ease, margin 260ms ease; }
+.sidebar-submenu.sidebar-submenu-open { max-height: 460px; opacity: 1; margin-top: 4px; margin-bottom: 8px; }
+@media (prefers-reduced-motion: reduce) { .sidebar-submenu { transition: none; } }
