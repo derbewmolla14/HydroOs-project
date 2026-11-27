@@ -94,7 +94,10 @@ export function App() {
               <Route path="/water-sources/flow" element={<AdminModulePage />} />
               <Route path="/water-sources/history" element={<AdminModulePage />} />
             </Route>
+            <Route path="/field-assessment" element={<AdminModulePage />} />
+            <Route path="/field-assessment/submitted" element={<AdminModulePage />} />
             <Route element={<ProtectedRoute serviceType="water_quality" />}>
+              <Route path="/water-quality/map" element={<AdminModulePage />} />
               <Route path="/water-quality" element={<AdminModulePage />} />
               <Route path="/water-quality/history" element={<AdminModulePage />} />
               <Route path="/water-quality/calibration" element={<AdminModulePage />} />

@@ -17,15 +17,15 @@ const navigation = [
   { section: "ADMINISTRATION", label: "Organizations", path: "/organizations", icon: Building2, roles: ["SUPER_ADMIN"], children: [
     ["View Organizations", "/organizations"], ["Add New Organization", "/organizations/new"], ["Organization Settings", "/organizations/settings"],
   ] },
-  { section: "ADMINISTRATION", label: "Users & Management", path: "/users", icon: Users, roles: accessRoles, children: [
+  { section: "ADMINISTRATION", label: "Users", path: "/users", icon: Users, roles: accessRoles, children: [
     ["View & Manage Users", "/users"], ["Create New Admin", "/users/create-admin"], ["User Roles & Permissions", "/users/roles"],
   ] },
   { section: "ADMINISTRATION", label: "Service Activation", path: "/services", icon: Link2, roles: ["SUPER_ADMIN"] },
   { section: "WATER OPERATIONS", label: "Water Tanks", path: "/tanks", icon: Droplets, roles: accessRoles, serviceType: "water_tank", children: [
-    ["Live Tank Levels", "/tanks/level"], ["Add New Tanker", "/tanks/new"], ["Tank History & Logs", "/tanks/history"], ["Tank Hardware Status", "/tanks/hardware"],
+    ["Tank List", "/tanks"], ["+ Add Water Tank", "/tanks/new"], ["Live Tank Levels", "/tanks/level"], ["Tank History & Logs", "/tanks/history"], ["Tank Hardware Status", "/tanks/hardware"],
   ] },
   { section: "WATER OPERATIONS", label: "Irrigation Control", path: "/irrigation", icon: Waves, roles: accessRoles, serviceType: "irrigation", children: [
-    ["Valve Controls", "/irrigation/valves"], ["Irrigation History", "/irrigation/history"], ["Schedules & Automation", "/irrigation/schedules"],
+    ["Controller Overview", "/irrigation"], ["Zone Schedules", "/irrigation/schedules"], ["Valve Controls", "/irrigation/valves"], ["Irrigation History", "/irrigation/history"],
   ] },
   { section: "WATER OPERATIONS", label: "Soil Moisture", path: "/soil-moisture", icon: Leaf, roles: accessRoles, serviceType: "soil_moisture", children: [
     ["Current Sensor Readings", "/soil-moisture/sensors"], ["Moisture History Logs", "/soil-moisture/history"], ["Threshold Configuration", "/soil-moisture/thresholds"],
@@ -34,14 +34,19 @@ const navigation = [
     ["Source Intake Status", "/water-sources/intake"], ["Flow Rate Monitoring", "/water-sources/flow"], ["Source History", "/water-sources/history"],
   ] },
   { section: "WATER OPERATIONS", label: "Water Quality", path: "/water-quality", icon: FlaskConical, roles: accessRoles, serviceType: "water_quality", children: [
-    ["Live Parameters (pH, TDS, Turbidity)", "/water-quality"], ["Quality History Logs", "/water-quality/history"], ["Sensor Calibration", "/water-quality/calibration"],
+    ["Water Tank Measurements", "/water-quality/history"], ["Water Quality Parameters (pH, Turbidity, Chlorine - WHO/WASH)", "/water-quality"], ["+ Add Water Tank", "/tanks/new"], ["Satellite Map Overview", "/water-quality/map"],
+  ] },
+
+  { section: "FIELD OPERATIONS", label: "Field Assessment", path: "/field-assessment", icon: ClipboardCheck, roles: accessRoles, children: [
+    ["New Field Assessment Form", "/field-assessment"], ["Submitted Assessments & Map", "/field-assessment/submitted"],
   ] },
   { section: "DEVICE & ALERTS", label: "Devices", path: "/devices", icon: Cpu, roles: accessRoles, children: [
     ["Connected Hardware List", "/devices"], ["Register New Device", "/devices/register"], ["Device Diagnostics", "/devices/diagnostics"],
   ] },
   { section: "DEVICE & ALERTS", label: "Smart Alerts", path: "/alerts", icon: ShieldAlert, roles: accessRoles, children: [
-    ["Active Alerts", "/alerts"], ["Alert Rules & Triggers", "/alert-settings"], ["Alert History", "/alerts/history"],
+    ["Active Alerts", "/alerts"], ["Alert History", "/alerts/history"],
   ] },
+  { section: "DEVICE & ALERTS", label: "Alert Settings", path: "/alert-settings", icon: Settings, roles: accessRoles },
   { section: "DEVICE & ALERTS", label: "Notifications", path: "/notifications", icon: Bell, roles: accessRoles, children: [
     ["System Broadcasts", "/notifications/broadcasts"], ["User Notifications", "/notifications"], ["Notification Settings", "/notifications/settings"],
   ] },
@@ -64,6 +69,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [unread, setUnread] = useState(0);
   const [expanded, setExpanded] = useState({});
   const systemRole = user?.systemRole || user?.role;
@@ -88,12 +94,19 @@ export function AdminLayout({ children, title = "Dashboard" }) {
         ? [["System Overview", dashboardPath]]
         : item.children.map(([label, path]) => [label, path === "/dashboard" ? dashboardPath : path]),
     } : systemRole === "OPERATOR" && item.serviceType
-      ? { ...item, children: item.children.filter(([label]) => label !== "Add New Tanker") }
+      ? { ...item, children: item.children.filter(([label]) => label !== "+ Add Water Tank" && label !== "Add New Tanker") }
       : item);
   const activePath = location.pathname;
   const activeGroups = new Set(allowedNavigation
     .filter((item) => item.children?.some(([, path]) => activePath === path || (path !== item.path && activePath.startsWith(path + "/"))))
     .map((item) => item.path));
+
+  useEffect(() => {
+    const updateViewport = () => setIsMobile(window.innerWidth < 800);
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
 
   useEffect(() => {
     api.get("/notifications").then(({ data }) => setUnread(data.unread)).catch(() => {});
@@ -114,7 +127,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
 
   return (
     <div className={`admin-shell min-h-screen bg-[#f2f9f7]${collapsed ? " sidebar-collapsed" : ""}`}>
-      <aside className={`admin-sidebar fixed inset-y-0 left-0 z-20 flex w-[246px] flex-col bg-[#073a37] text-[#d3ebe5] transition-transform duration-200${mobileOpen ? " mobile-open" : ""}`}>
+      <aside className={`admin-sidebar fixed inset-y-0 left-0 z-20 flex w-[246px] flex-col bg-[#0d3b36] text-[#d3ebe5] transition-transform duration-200${mobileOpen ? " mobile-open" : ""}`}>
         <div className="sidebar-brand flex h-[76px] items-center gap-2.5 px-[22px] text-[1.28rem] font-extrabold tracking-[-.05em]">
           <span className="sidebar-logo grid h-[33px] w-[33px] place-items-center rounded-[10px] bg-[#7ce0be] text-[1.18rem] text-[#063d37]">H</span>
           {!collapsed && <span>Hydro<span className="text-[#6de2c0]">OS</span></span>}
@@ -147,10 +160,10 @@ export function AdminLayout({ children, title = "Dashboard" }) {
                       {isExpanded ? <ChevronDown size={15}/> : <ChevronRight size={15}/>}
                     </button>}
                   </div>
-                  {item.children && !collapsed && isExpanded && <div className="ml-[22px] mb-2 mt-1 grid gap-1 border-l border-[#47766c] pl-3">
-                    {item.children.map(([childLabel, childPath]) => <NavLink key={childPath} to={childPath}
+                  {item.children && !collapsed && <div aria-hidden={!isExpanded} inert={!isExpanded} className={"sidebar-submenu ml-[22px] grid gap-1 border-l border-[#47766c] pl-3 " + (isExpanded ? "sidebar-submenu-open" : "")}>
+                    {item.children.map(([childLabel, childPath]) => <NavLink key={childLabel} to={childPath}
                       onClick={() => setMobileOpen(false)}
-                      className={({isActive}) => `rounded-lg px-3 py-[8px] text-[.68rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#14554b] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
+                      className={({isActive}) => `rounded-lg px-3 py-[8px] text-[.68rem] font-medium leading-snug transition-colors ${isActive ? "bg-[#114b44] text-[#a2e8cc]" : "text-[#91b9ae] hover:bg-white/5 hover:text-white"}`}>{childLabel}</NavLink>)}
                   </div>}
                 </div>
               );
@@ -170,8 +183,8 @@ export function AdminLayout({ children, title = "Dashboard" }) {
       <div className="admin-content ml-[246px] w-[calc(100%-246px)] transition-[margin,width] duration-200">
         <header className="admin-topbar flex h-[76px] items-center border-b border-[#e4ece9] bg-white px-[clamp(20px,3vw,42px)]">
           <button className="sidebar-toggle grid h-[34px] w-[34px] place-items-center rounded-lg border border-[#dfeae6] bg-white text-[#587a77]"
-            onClick={() => window.innerWidth < 800 ? setMobileOpen(true) : setCollapsed((value) => !value)} aria-label="Toggle sidebar">
-            {window.innerWidth < 800 ? <Menu size={21}/> : collapsed ? <ChevronRight size={21}/> : <ChevronLeft size={21}/>}
+            onClick={() => isMobile ? setMobileOpen(true) : setCollapsed((value) => !value)} aria-label="Toggle sidebar">
+            {isMobile ? <Menu size={21}/> : collapsed ? <ChevronRight size={21}/> : <ChevronLeft size={21}/>}
           </button>
           <div className="topbar-title ml-[18px] flex flex-col gap-[3px] text-[1.08rem] font-extrabold">
             <span>{title}</span><small className="text-[.67rem] font-medium text-[#86a19d]">{organizationName}</small>
