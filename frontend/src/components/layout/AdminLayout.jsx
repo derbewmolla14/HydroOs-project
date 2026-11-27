@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  Activity, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight, Cpu,
+  Activity, Bell, Building2, ChevronDown, ChevronLeft, ChevronRight, ClipboardCheck, Cpu,
   Droplets, FlaskConical, Gauge, History, Leaf, Link2, LogOut, Menu, Radio,
   Settings, ShieldAlert, ShieldCheck, Users, Waves, X,
 } from "lucide-react";
