@@ -14,7 +14,8 @@ import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { AdminLayout } from "../layouts/AdminLayout";
 import SatelliteLocationPicker from "../components/location/SatelliteLocationPicker";
-import { LocationSummary } from "../components/location/LocationSummary";\nimport TankSatelliteViewer from "../components/location/TankSatelliteViewer";
+import { LocationSummary } from "../components/location/LocationSummary";
+import TankSatelliteViewer from "../components/location/TankSatelliteViewer";
 
 const emptyForm = {
   organizationId: "",
@@ -25,9 +26,9 @@ const emptyForm = {
   tankType: "ground",
   capacity: "",
   location: "",
-  latitude: 11.0849,
-  longitude: 39.7366,
-  coordinates: { latitude: 11.0849, longitude: 39.7366 },
+  latitude: "",
+  longitude: "",
+  coordinates: { latitude: "", longitude: "" },
   adminLocation: { country: "Ethiopia", region: "Amhara", zone: "South Wollo", woreda: "", kebele: "" },
   mapAdded: false,
   installationDate: "",
