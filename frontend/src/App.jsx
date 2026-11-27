@@ -24,6 +24,7 @@ import { OrganizationsPage } from "./pages/OrganizationsPage";
 import { ServiceManagementPage } from "./pages/ServiceManagementPage";
 import { WaterSourcesPage } from "./pages/WaterSourcesPage";
 import { FieldAssessmentPage } from "./pages/FieldAssessmentPage";
+import { WaterQualityPage } from "./pages/WaterQualityPage";
 
 const authenticatedRoles = [
   "SUPER_ADMIN",
@@ -100,7 +101,7 @@ export function App() {
             <Route path="/field-assessment/submitted" element={<FieldAssessmentPage />} />
             <Route element={<ProtectedRoute serviceType="water_quality" />}>
               <Route path="/water-quality/map" element={<AdminModulePage />} />
-              <Route path="/water-quality" element={<AdminModulePage />} />
+              <Route path="/water-quality" element={<WaterQualityPage />} />
               <Route path="/water-quality/history" element={<AdminModulePage />} />
               <Route path="/water-quality/calibration" element={<AdminModulePage />} />
             </Route>
