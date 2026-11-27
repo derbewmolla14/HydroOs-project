@@ -44,8 +44,9 @@ const navigation = [
     ["Connected Hardware List", "/devices"], ["Register New Device", "/devices/register"], ["Device Diagnostics", "/devices/diagnostics"],
   ] },
   { section: "DEVICE & ALERTS", label: "Smart Alerts", path: "/alerts", icon: ShieldAlert, roles: accessRoles, children: [
-    ["Active Alerts", "/alerts"], ["Alert Rules & Triggers", "/alert-settings"], ["Alert History", "/alerts/history"],
+    ["Active Alerts", "/alerts"], ["Alert History", "/alerts/history"],
   ] },
+  { section: "DEVICE & ALERTS", label: "Alert Settings", path: "/alert-settings", icon: Settings, roles: accessRoles },
   { section: "DEVICE & ALERTS", label: "Notifications", path: "/notifications", icon: Bell, roles: accessRoles, children: [
     ["System Broadcasts", "/notifications/broadcasts"], ["User Notifications", "/notifications"], ["Notification Settings", "/notifications/settings"],
   ] },
@@ -92,7 +93,7 @@ export function AdminLayout({ children, title = "Dashboard" }) {
         ? [["System Overview", dashboardPath]]
         : item.children.map(([label, path]) => [label, path === "/dashboard" ? dashboardPath : path]),
     } : systemRole === "OPERATOR" && item.serviceType
-      ? { ...item, children: item.children.filter(([label]) => label !== "Add New Tanker") }
+      ? { ...item, children: item.children.filter(([label]) => label !== "+ Add Water Tank" && label !== "Add New Tanker") }
       : item);
   const activePath = location.pathname;
   const activeGroups = new Set(allowedNavigation
