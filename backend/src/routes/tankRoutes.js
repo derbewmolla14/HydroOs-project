@@ -70,9 +70,16 @@ router.patch('/:tankId', requireRoles('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_
 });
 
 router.put('/:tankId', requireRoles('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'), async (req, res, next) => {
-    req.method = 'PATCH';
-    next();
-}, (req, res, next) => router.handle({ ...req, url: req.baseUrl + req.path }, res, next));
+    try {
+        if (!canManageTanks(req.user)) return res.status(403).json({ success: false, message: 'Tank management permission is required.' });
+        const existing = await Tank.findOne({ _id: req.params.tankId, ...tankOrganizationFilter(req.user, req.body.organizationId) });
+        if (!existing) return res.status(404).json({ success: false, message: 'Tank not found.' });
+        const values = await assertTankInput(req.body, { organizationId: existing.organizationId.toString(), tankId: existing.id });
+        const tank = await Tank.findByIdAndUpdate(existing.id, { $set: values }, { new: true, runValidators: true }).populate('assignedOperatorId', 'firstname lastname email');
+        await recordAudit({ actorUserId: req.user.id, action: 'TANK_UPDATED', resourceType: 'Tank', resourceId: tank.id, organizationId: existing.organizationId, metadata: { fields: Object.keys(values) }, ipAddress: req.ip });
+        res.json({ success: true, tank: serializeTank(tank) });
+    } catch (error) { if (error.code === 11000) error.statusCode = 409; next(error); }
+});
 
 router.delete('/:tankId', requireRoles('SUPER_ADMIN', 'ORGANIZATION_ADMIN', 'SUB_ADMIN'), async (req, res, next) => {
     try {
